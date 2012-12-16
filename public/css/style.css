@@ -1,33 +1,13 @@
 .link-list .btn {
-    width: 9em;
+    width: 7.5em;
     margin-right: 1em;
 }
 
-.link-list section div:last-child {
-    margin-top: 5px;
+.link-list tr td:last-child {
+    padding-top: 9px;
 }
 
-.link-list section {
-    display: -ms-flex;
-    display: -moz-flex;
-    display: -webkit-flex;
-    display: flex;
-    -ms-flex-direction: row;
-    -ms-flex-wrap: ;
-    -moz-flex-flow: row ;
-    -webkit-flex-flow: row ;
-    flex-flow: row ;
-    -ms-flex-pack: start;
-    -moz-justify-content: flex-start;
-    -webkit-justify-content: flex-start;
-    justify-content: flex-start;
-}
-
-.link-list div {
-    -ms-flex: initial;
-    -moz-flex: initial;
-    -webkit-flex: initial;
-    flex: initial;
-
-    margin-bottom: 0.5em;
+.link-list td {
+    vertical-align: top;
+    padding: 0.3em 0;
 }
