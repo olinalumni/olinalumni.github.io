@@ -10,3 +10,14 @@
 .link-list td {
     vertical-align: top;
 }
+
+
+.card {
+	border-left: 30px solid #6BC1D3;
+	margin: 10px;
+}
+
+.links li {
+	display: inline;
+	padding: 3px;
+}
