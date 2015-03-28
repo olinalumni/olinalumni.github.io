@@ -32,6 +32,10 @@
     border-left: 8px solid #222;
 }
 
+.section-panel h1,h2,h3,h4 {
+    margin-top: 0;
+}
+
 #mailinglists__list,
 #mailinglists__list li {
 	display: block;
@@ -55,4 +59,9 @@
 
 #mailinglists__map {
 	text-align: right;
+}
+
+.btn-inverse {
+    background-color: #222;
+    color: white;
 }
