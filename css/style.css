@@ -1,3 +1,7 @@
+.container {
+	padding: 0em 0 3em;
+}
+
 .link-list a {
     width: 7.5em;
     margin-right: 1em;
@@ -15,4 +19,25 @@
     padding: 2rem;
     border: 2px solid #222;
     border-left: 8px solid #222;
+}
+
+#mailinglists__list,
+#mailinglists__list li {
+	display: block;
+	border: none;
+	margin: 0; 
+	padding: 0;
+}
+
+#mailinglists__list {
+	-moz-columns: 2;
+	-webkit-columns: 2;
+	columns: 2;
+}
+
+#mailinglists__list li a {
+	display: block;
+	border: 1px solid #f00;
+	padding: 0.5em 1em;
+	text-align: center;
 }
