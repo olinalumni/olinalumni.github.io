@@ -8,4 +8,3 @@ Running locally
 Since it's just a static app, you can serve the files really easily
 
 - `python -m SimpleHTTPServer`
-
