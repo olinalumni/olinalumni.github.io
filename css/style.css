@@ -65,3 +65,31 @@
     background-color: #222;
     color: white;
 }
+
+#welcome {
+	border-color: #7B5AA6;
+}
+
+#events {
+	border-color: #00653E;
+}
+
+#rolodex {
+	border-color: #6BC1D3;
+}
+
+#donate {
+	border-color: #FFC20E;
+}
+
+#career {
+	border-color: #26AAA5;
+}
+
+#mailinglists {
+	border-color: #E31D3C;
+}
+
+#olinalumnicouncil {
+	border-color: #BEBE3F;
+}
