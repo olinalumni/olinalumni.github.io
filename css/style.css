@@ -42,19 +42,11 @@
 #mailinglists__list li {
 	display: block;
 	border: none;
-	margin: 5px;
+	margin: 5 0 0 0;
 	padding: 0;
 }
 
-#mailinglists__list {
-	-moz-columns: 2;
-	-webkit-columns: 2;
-	columns: 2;
-}
-
 #mailinglists__list li a {
-	display: block;
-	/*border: 1px solid;*/
 	padding: 0.5em 1em;
 	text-align: center;
 }
@@ -66,4 +58,12 @@
 .btn-inverse {
     background-color: #222;
     color: white;
+}
+
+hr {
+	margin: 10px 0 10px 0;
+	width: 180px;
+}
+#lists {
+	/*margin-top:10px;*/
 }
