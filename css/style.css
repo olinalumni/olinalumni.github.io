@@ -10,3 +10,56 @@
 .link-list td {
     vertical-align: top;
 }
+
+.card {
+	border-left: 30px solid #6BC1D3;
+	margin: 10px;
+	background-color: #F7F8FF;
+	padding-top: 1.5rem;
+}
+
+.links li {
+	display: inline;
+	padding: 3px;
+}
+
+.section-panel {
+    margin: 2rem 1rem 0 1rem;
+    padding: 2rem;
+    border: 2px solid #222;
+    border-left: 8px solid #222;
+}
+
+.section-panel h1,h2,h3,h4 {
+    margin-top: 0;
+}
+
+#mailinglists__list,
+#mailinglists__list li {
+	display: block;
+	border: none;
+	margin: 5px;
+	padding: 0;
+}
+
+#mailinglists__list {
+	-moz-columns: 2;
+	-webkit-columns: 2;
+	columns: 2;
+}
+
+#mailinglists__list li a {
+	display: block;
+	/*border: 1px solid;*/
+	padding: 0.5em 1em;
+	text-align: center;
+}
+
+#mailinglists__map {
+	text-align: right;
+}
+
+.btn-inverse {
+    background-color: #222;
+    color: white;
+}
