@@ -37,7 +37,7 @@
 #mailinglists__list li {
 	display: block;
 	border: none;
-	margin: 0;
+	margin: 5px;
 	padding: 0;
 }
 
@@ -49,7 +49,7 @@
 
 #mailinglists__list li a {
 	display: block;
-	border: 1px solid #f00;
+	/*border: 1px solid;*/
 	padding: 0.5em 1em;
 	text-align: center;
 }
