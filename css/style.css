@@ -66,10 +66,6 @@
     color: white;
 }
 
-#welcome {
-	border-color: #7B5AA6;
-}
-
 #events {
 	border-color: #00653E;
 }
@@ -83,7 +79,7 @@
 }
 
 #career {
-	border-color: #26AAA5;
+	border-color: #7B5AA6;
 }
 
 #mailinglists {
