@@ -1,7 +1,3 @@
-.container {
-	padding: 0em 0 3em;
-}
-
 .link-list a {
     width: 7.5em;
     margin-right: 1em;
@@ -18,6 +14,8 @@
 .card {
 	border-left: 30px solid #6BC1D3;
 	margin: 10px;
+	background-color: #F7F8FF;
+	padding: 1.5rem 1.5rem 0 1.5rem;
 }
 
 .links li {
@@ -40,21 +38,23 @@
 #mailinglists__list li {
 	display: block;
 	border: none;
-	margin: 0;
+	margin: 5 0 0 0;
 	padding: 0;
 }
 
-#mailinglists__list {
-	-moz-columns: 2;
-	-webkit-columns: 2;
-	columns: 2;
+#mailinglists__list li a {
+	padding: 0.5em 1em;
 }
 
-#mailinglists__list li a {
-	display: block;
-	border: 1px solid #f00;
-	padding: 0.5em 1em;
-	text-align: center;
+#mailinglists__list li {
+	text-align: center
+}
+
+#mailinglists__list hr {
+	margin: 10px 0 10px 0;
+	width: 80%;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 #mailinglists__map {
