@@ -25,6 +25,9 @@
       <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/img/olin_logo_72.png">
                     <link rel="apple-touch-icon-precomposed" href="/img/olin_logo_57.png">
                                    <link rel="shortcut icon" href="/img/favicon.ico">
+    <!-- Script Imports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/riot/2.0.13/riot+compiler.min.js"></script>
+    <script src="tags/card-list.tag" type="riot/tag"></script>
   </head>
 
   <body>
@@ -106,65 +109,66 @@
         </div>
 
         <!-- Clubs/Orgs Rolodex -->
-        <div id="rolodex" class="section-panel">
-          <div class="row">
-            <div class="col-xs-12">
-              <h2>Olin Organizations</h2>
-            </div>
-          </div>
+        <div id="rolodex" class="row section-panel">
+          <h2>Olin Organizations </h2>
 
-          <div class="row">
 
+            <!-- Org Column 1/2 -->
             <div class="col-xs-6">
+               <card-list id="orgs1"></card-list>
 
-              <div class="card row">
-                <div class="info">
-                  <h4>REVO <small> Research of Electric Vehicles at Olin </small></h4>
-                  <p id="description">A team that researches and builds electric vehicles at Olin.</p>
-                </div>
-                <div class="contact">
-                  <ul class= "links list-unstyled">
-                    <li><a href="http://www.olinrevo.org/"><i class="fa fa-link"></i></a> </li>
-                    <li><a><i class="fa fa-envelope-o"></i></a> </li>
-                    <li><a href="https://www.facebook.com/OlinREVO"><i class="fa fa-facebook"></i></a> </li>
-                    <li><a href="https://twitter.com/olinrevo"><i class="fa fa-twitter"></i></a> </li>
-                  </ul>
-                </div>
-              </div>
+               <script>riot.mount('#orgs1', 'card-list', {
+                cards: [
+                    {
+                        mainHeading: "REVO",
+                        subHeading:  "Research of Electrical Vehicles at Olin",
+                        description: "A team that researches and builds electric vehicles at Olin.",
+                        socialMedia: {
+                            webURL: "http://www.olinrevo.org/",
+                            //emailURL: "mailto:#",
+                            facebookURL: "https://www.facebook.com/OlinREVO",
+                            twitterURL: "https://twitter.com/olinrevo",
+                            //youtubeURL: "#"
+                        }
+                    },
 
-              <div class="card row">
-                <div class="info">
-                  <h4>HPV <small>Human Powered Vehicles</small></h4>
-                  <p id="description">A team that designs, builds, and races a vehicle at ASME's Human Powered Vehicle Challenge.</p>
-                </div>
-                <div class="contact">
-                  <ul class= "links list-unstyled">
-                    <li><a href="http://hpv.olin.edu/"><i class="fa fa-link"></i></a> </li>
-                    <li><a><i class="fa fa-envelope-o"></i></a> </li>
-                    <li><a href="https://www.facebook.com/OlinHPV"><i class="fa fa-facebook"></i></a> </li>
-                  </ul>
-                </div>
-              </div>
-
+                    {
+                        mainHeading: "HPV",
+                        subHeading:  "Human Powered Vehicles",
+                        description: "A team that designs, builds, and races a vehicle at ASME's Human Powered Vehicle Challenge.",
+                        socialMedia: {
+                            webURL: "http://hpv.olin.edu/",
+                            //emailURL: "mailto:#",
+                            facebookURL: "https://www.facebook.com/OlinHPV",
+                            //twitterURL: "#",
+                            //youtubeURL: "#"
+                        }
+                    }
+                ]})
+              </script>
             </div>
-
+            
+            <!-- Org Column 2/2 -->
             <div class="col-xs-6">
-              
-              <div class="card row">
-                <div class="info">
-                  <h4>ORO <small>Olin Rock Orchestra</small></h4>
-                  <p id="description">A group of engineering students on a mission to marry rock and classical music.</p>
-                </div>
-                <div class="contact">
-                  <ul class= "links list-unstyled">
-                    <li><a><i class="fa fa-envelope-o"></i></a> </li>
-                    <li><a href="https://www.facebook.com/pages/Olin-Rock-Orchestra/138124762925294"><i class="fa fa-facebook"></i></a></li>
-                    <li><a href="https://www.youtube.com/channel/UC5GSw5wx86lpqF_mmHNt7RA"><i class="fa fa-youtube-play"></i></a></li>
-                  </ul>
-                </div>
-              </div>        
+               <card-list id="orgs2"></card-list>
+
+               <script>riot.mount('#orgs2', 'card-list', {
+                cards: [
+                    {
+                        mainHeading: "ORO",
+                        subHeading:  "Olin Rock Orchestra",
+                        description: "A group of engineering students on a mission to marry rock and classical music.",
+                        socialMedia: {
+                            webURL: "http://www.olinrevo.org/",
+                            //emailURL: "mailto:#",
+                            facebookURL: "https://www.facebook.com/pages/Olin-Rock-Orchestra/138124762925294",
+                            //twitterURL: "#",
+                            youtubeURL: "https://www.youtube.com/channel/UC5GSw5wx86lpqF_mmHNt7RA"
+                        }
+                    }
+                ]})
+              </script>
             </div>
-          </div>
         </div>
 
         <div id="donate" class="section-panel">
@@ -223,9 +227,9 @@
           <div class="col-sm-12 col-md-6 col-lg-7">
             <h2>Stay in Touch</h2>
             <p>Join a mailing list for your location in the world.</p>
-            
+
             <div class="row" id="lists">
-              
+
                 <div class="col-xs-6">
                   <ul id="mailinglists__list">
                     <li><a href="https://groups.google.com/forum/#!forum/olinalumni-boston/" title="Boston Mailing List">Boston</a></li>
@@ -237,7 +241,7 @@
                     <li><a href="https://groups.google.com/forum/#!forum/olinalumni-pgh" title="Pittsburgh Mailing List">Pittsburgh</a></li>
                   </ul>
                 </div>
-                
+
                 <div class="col-xs-6">
                   <ul id="mailinglists__list">
                     <li><a href="https://groups.google.com/forum/#!forum/olinalumni-bayarea" title="San Francisco Bay Area Mailing List">San Francisco Bay Area</a></li>
@@ -247,7 +251,7 @@
                     <li><a href="https://groups.google.com/forum/#!forum/olinalumni-socal" title="Southern California Mailing List">Southern California</a></li>
                   </ul>
                 </div>
-            
+
             </div>
           </div>
 
