@@ -1,16 +1,3 @@
-.link-list a {
-    width: 7.5em;
-    margin-right: 1em;
-}
-
-.link-list tr td:last-child {
-    padding-top: 9px;
-}
-
-.link-list td {
-    vertical-align: top;
-}
-
 .card {
 	border-left: 30px solid #6BC1D3;
 	margin: 10px 0;
@@ -34,23 +21,24 @@
     margin-top: 0;
 }
 
-.mailinglists__lists,
-.mailinglists__lists li {
+.mailinglists__list, 
+.mailinglists__list li {
 	display: block;
 	border: none;
 	margin: 5 0 0 0;
 	padding: 0;
+	list-style-type: none;
 }
 
-.mailinglists__lists li a {
+.mailinglists__list li a {
 	padding: 0.5em 1em;
 }
 
-.mailinglists__lists li {
+.mailinglists__list li {
 	text-align: center
 }
 
-.mailinglists__lists hr {
+.mailinglists__list hr {
 	margin: 10px 0 10px 0;
 	width: 80%;
 	margin-left: auto;
@@ -59,11 +47,6 @@
 
 #mailinglists__map {
 	text-align: right;
-}
-
-.btn-inverse {
-    background-color: #222;
-    color: white;
 }
 
 #events {
