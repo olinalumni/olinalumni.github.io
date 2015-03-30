@@ -82,14 +82,41 @@
 
           <!-- Welcome Footer Links -->
           <div class="row">
-            <div class="col-xs-12">
-              <hr>
-              <h3>Key Resources</h3>
-              <ul>
-                <li>https://alumnidir.olin.edu/</li>
-                <li><a class="btn btn-default btn-md btn-inverse" href="http://eepurl.com/F_3TH">Newsletter</a></li>
-                <li><a class="btn btn-default btn-md btn-inverse" href="https://www.facebook.com/groups/olin.alumni/">Olin Alumni Facebook Group</a></li>
-              </ul>
+            <div class="col-xs-6">
+              <card-list id="key-resources1"></card-list>
+              <script>riot.mount('#key-resources1', 'card-list', {
+                cards: [
+                  {
+                    title: "Olin Alumni Facebook Group",
+                    description: "Discussion group for Olin's alumni. Post news for alumni, or ask a question.",
+                    links: {
+                      www: "https://facebook.com/groups/olinalumni",
+                      facebook: "groups/olinalumni",
+                    }
+                  },
+                  {
+                    title: "Monthly Alumni Newsletter",
+                    description: "Sent the 1st of each month: news about alumni, updates from campus, and a deep dive on something interesting. Submit news using the link in each newsletter.",
+                    links: {
+                      www: "http://eepurl.com/F_3TH",
+                    }
+                  }
+                ]})
+              </script>
+            </div>
+            <div class="col-xs-6">
+              <card-list id="key-resources2"></card-list>
+              <script>riot.mount('#key-resources2', 'card-list', {
+                cards: [
+                  {
+                    title: "Alumni Directory",
+                    description: "Olin's alumni directory. Update your contact information for the college to communicate with you, and find out how to reach out to other alumni.",
+                    links: {
+                      www: "https://alumnidir.olin.edu/",
+                    }
+                  },
+                ]})
+              </script>
             </div>
           </div>
         </div>
@@ -111,9 +138,6 @@
         <!-- Clubs/Orgs Rolodex -->
         <div id="rolodex" class="row section-panel">
           <h2>Olin Organizations</h2>
-
-
-            <!-- Org Column 1/2 -->
             <div class="col-xs-6">
                <card-list id="orgs1"></card-list>
 
@@ -150,8 +174,6 @@
                 ]})
               </script>
             </div>
-            
-            <!-- Org Column 2/2 -->
             <div class="col-xs-6">
                <card-list id="orgs2"></card-list>
 
