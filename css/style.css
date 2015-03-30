@@ -34,23 +34,23 @@
     margin-top: 0;
 }
 
-#mailinglists__list,
-#mailinglists__list li {
+.mailinglists__lists,
+.mailinglists__lists li {
 	display: block;
 	border: none;
 	margin: 5 0 0 0;
 	padding: 0;
 }
 
-#mailinglists__list li a {
+.mailinglists__lists li a {
 	padding: 0.5em 1em;
 }
 
-#mailinglists__list li {
+.mailinglists__lists li {
 	text-align: center
 }
 
-#mailinglists__list hr {
+.mailinglists__lists hr {
 	margin: 10px 0 10px 0;
 	width: 80%;
 	margin-left: auto;
