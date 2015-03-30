@@ -10,7 +10,7 @@
     <meta property="og:url" content="http://www.olinalumni.com" />
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
     <link href="/css/style.css" rel="stylesheet">
 
@@ -25,14 +25,17 @@
       <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/img/olin_logo_72.png">
                     <link rel="apple-touch-icon-precomposed" href="/img/olin_logo_57.png">
                                    <link rel="shortcut icon" href="/img/favicon.ico">
+    <!-- Script Imports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/riot/2.0.13/riot+compiler.min.js"></script>
+    <script src="tags/card-list.tag" type="riot/tag"></script>
   </head>
 
   <body>
-
-    <nav class="navbar navbar-default" role="navigation">
+    <nav class="navbar navbar-default">
       <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
@@ -41,143 +44,314 @@
           <a class="navbar-brand" href="#">Olin Alumni</a>
         </div>
 
-        <div class="collapse navbar-collapse navbar-ex1-collapse">
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
-            <li><p class="navbar-text"><a href="http://www.facebook.com/olinalumni" rel="me"><i class="fa fa-lg fa-facebook-square"></i><span class="sr-only">Facebook</span></a></p></li>
+            <li><a href="#events">Events</a></li>
+            <li><a href="#rolodex">Interests</a></li>
+            <li><a href="#donate">Donate</a></li>
+            <li><a href="#career">Career</a></li>
+            <li><a href="#mailinglists">Regional Lists</a></li>
           </ul>
-        </div>
-      </div>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container -->
     </nav>
 
     <div class="container">
-      <div class="row">
-        <div class="col-12 col-lg-6 link-list">
-          <h3>Helpful Links</h3>
 
-          <h4>Stay In Touch</h4>
-          <table>
-            <tr>
-              <td><a class="btn btn-default" href="http://facebook.com/groups/olinalumni" title="Olin Alumni Facebook Group">FB Group</a></td>
-              <td>Discussions</td>
-            </tr>
-            <tr>
-              <td><a class="btn btn-default" href="http://eepurl.com/F_3TH" title="Monthly Newsletter Sign Up">Newsletter</a></td>
-              <td>Monthly Email Newsletter</td>
-            </tr>
-            <tr>
-              <td><a class="btn btn-default" href="https://alumnidir.olin.edu/" title="Olin Alumni Directory">Directory</a></td>
-              <td>Login directly via the Olin Portal - my.olin.edu</td>
-            </tr>
-          </table>
+        <!-- Welcome -->
+        <div id="welcome" class="section-panel">
+          <div class="row">
+            <!-- Welcome Youtube Video -->
+            <div class="hidden-xs hidden-sm col-md-5">
+              <div class="embed-responsive embed-responsive-16by9">
+                <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/55f6OO0hKac" frameborder="0" allowfullscreen ></iframe>
+              </div>
+            </div>
 
-          <h5>Mailing Lists</h5>
-          <ul>
-            <li><a href="https://groups.google.com/forum/#!forum/olinalumni-boston/" title="Boston Mailing List">Boston</a></li>
-            <li><a href="https://groups.google.com/forum/#!forum/olinalumni-midwest" title="Midwest Mailing List">Midwest</a></li>
-            <li><a href="https://groups.google.com/forum/#!forum/olinalumni-nyc" title="New York City Mailing List">New York City</a></li>
-            <li><a href="https://groups.google.com/forum/#!forum/olinalumni-pgh" title="Pittsburgh Mailing List">Pittsburgh</a></li> 
-            <li><a href="https://groups.google.com/forum/#!forum/olinalumni-bayarea" title="San Francisco Bay Area Mailing List">San Francisco Bay Area</a></li>
-            <li><a href="https://groups.google.com/forum/#!forum/olinalumni-seattle" title="Seattle Mailing List">Seattle</a></li>
-            <li><a href="https://groups.google.com/forum/#!forum/olinalumni-socal" title="Southern California Mailing List">Southern California</a></li>
-          </ul>
+            <!-- Welcome Message -->
+            <div class="col-xs-12 col-md-7">
+              <h2>Welcome, alumni!</h2>
+              <p>Hello alumni! Here is a collection of resources to help you connect with alumni, current students, and the college. Join groups, start discussions, and do something!</p>
 
-          <h4>Career Resources</h3>
-          <table>
-            <tr>
-              <td><a class="btn btn-default" href="/resources/resume/" title="Resume Tips">Resume Tips</a></td>
-              <td>Craft your resume</td>
-            </tr>
-            <tr>
-              <td><a class="btn btn-default" href="/resources/software_engineering/" title="Software Engineering Resources">Software</a></td>
-              <td>Resources for prepping for software interviews</td>
-            </tr>
-            <tr>
-              <td><a class="btn btn-default" href="http://www.olin.edu/collaborate/careers-graduate-studies/opps-alumni/" title="Alumni Career Opportunities">Olin PGP</a></td>
-              <td>PGP's job listings for alumni</td>
-            </tr>
-          </table>
+              <p>This site is a growing collection of resources assembled by alumni. File an issue at <a href="https://github.com/olinalumni/olinalumni.github.io">https://github.com/olinalumni/olinalumni.github.io</a> to get things added or updated. Your help is welcome!</p>
 
-          <h4>Donate to Olin</h4>
-          <table>
-            <tr>
-              <td><a class="btn btn-default" href="http://giving.olin.edu/">Donate</a></td>
-              <td>Donate to the college</td>
-            </tr>
-            <tr>
-              <td><a class="btn btn-default" href="https://my.olin.edu/ICS/Olin_Family/Alumni_Community.jnz?portlet=Contribution_History">Donation<br />History</a></td>
-              <td>Username first initial last name. <a href="https://pm.olin.edu/pm/">forgot password?</a></td>
-            </tr>
-          </table>
+              <p>&mdash; Greg &lsquo;10, Tim &lsquo;13, Bonnie &lsquo;17, Nick &lsquo;17</p>
+            </div>
+          </div>
 
-          <h4>Do Something</h4>
-          <table>
-            <tr>
-              <td><a class="btn btn-default" href="http://olinapps.com/">olinapps.com</a></td>
-              <td>Tool directory</td>
-            </tr>
-            <tr>
-              <td><a class="btn btn-default" href="http://bit.ly/OACAllCalendar">Events</a></td>
-              <td>Alumni Events Calendar</td>
-            </tr>
-            <tr>
-              <td><a class="btn btn-default" href="https://docs.google.com/folder/d/0B5RO2Yzh2z01RFl4dHpQY3Y2TFE/edit" title="Olin Alumni Google Drive">Google Drive</a></td>
-              <td>Files for you!</td>
-            </tr>
-            <tr>
-              <td><a class="btn btn-default" href="http://digitalcommons.olin.edu/alumni_pubs/" title="Alumni Publications">Digital<br />Commons</a></td>
-              <td>Read alumni publications</td>
-            </tr>
-            <tr>
-              <td><a class="btn btn-default" href="http://www.boonerings.com/htmpages/olinring.htm" title="Class Ring Re-Orders">Class Rings</a></td>
-              <td>Specify &quot;old&quot; or &quot;new&quot; logo.</td>
-          </table>
+          <!-- Welcome Footer Links -->
+          <div class="row">
+            <div class="col-xs-6">
+              <card-list id="key-resources1"></card-list>
+              <script>riot.mount('#key-resources1', 'card-list', {
+                cards: [
+                  {
+                    title: "Olin Alumni Facebook Group",
+                    description: "Discussion group for Olin's alumni. Post news for alumni, or ask a question.",
+                    links: {
+                      www: "https://facebook.com/groups/olinalumni",
+                      facebook: "groups/olinalumni",
+                    }
+                  },
+                  {
+                    title: "Monthly Alumni Newsletter",
+                    description: "Sent the 1st of each month: news about alumni, updates from campus, and a deep dive on something interesting. Submit news using the link in each newsletter.",
+                    links: {
+                      www: "http://eepurl.com/F_3TH",
+                    }
+                  }
+                ]})
+              </script>
+            </div>
+            <div class="col-xs-6">
+              <card-list id="key-resources2"></card-list>
+              <script>riot.mount('#key-resources2', 'card-list', {
+                cards: [
+                  {
+                    title: "Alumni Directory",
+                    description: "Olin's alumni directory. Update your contact information for the college to communicate with you, and find out how to reach out to other alumni.",
+                    links: {
+                      www: "https://alumnidir.olin.edu/",
+                    }
+                  },
+                ]})
+              </script>
+            </div>
+          </div>
         </div>
 
-        <div class="col-12 col-lg-6">
-          <h3>Olin Alumni Council</h3>
-
-          <p>Hit us up at <a href="mailto:oac@lists.olin.edu">oac@lists.olin.edu</a> to get in touch with the Olin Alumni Council.</p>
-
-          <h4>OAC Board Members</h4>
-          <ul>
-            <li>President &mdash; Greg Marra, '10</li>
-            <li>President-Elect &mdash; Bennett Chabot, '09</li>
-            <li>Past-President &mdash; Adam J. College, '07</li>
-            <li>Secretary &mdash; <em>Pending Spring 2015 Special Election</em></li>
-            <li>Treasurer &mdash; Eric Kolker, '13</li>
-          </ul>
-
-          <h4>OAC Class Reps</h4>
-          <ul>
-            <li>2006 &mdash; Kate Blazek, Polina Segalova</li>
-            <li>2007 &mdash; Dan Lin, Sara Wheeland</li>
-            <li>2008 &mdash; Avery Anderson</li>
-            <li>2009 &mdash; David Nelson</li>
-            <li>2010 &mdash; Avinash Uttamchandani, Brian Fahrenbach</li>
-            <li>2011 &mdash; <em>Pending Spring 2015 Special Election</em></li>
-            <li>2012 &mdash; Ananya Kejriwal, Meghan Murray</li>
-            <li>2013 &mdash; Hannah Sarver, Margaret-Ann Seger</li>
-            <li>2014 &mdash; Larissa Little, Brendan Quinlivan</li>
-          </ul>
-
-          <h4>Committees &amp; Points of Contact</h4>
-          <ul>
-            <li>Events &mdash; Polina Segalova</li>
-            <li>Communications &mdash; Greg Marra</li>
-            <li>Development and Philanthropy &mdash; Greg Marra</li>
-            <li>Banter &mdash; Sara Wheeland</li>
-            <li>Student Recruiting &mdash; Hannah Sarver, Margaret-Ann Seger</li>
-          </ul>
+       <!-- Events -->
+        <div id="events" class="section-panel">
+          <div class="row">
+            <div class="col-sm-12">
+              <h2>Upcoming Events</h2>
+              <p>For all events, visit the <a href="https://docs.google.com/spreadsheets/d/17XrJKNuWSylZbtc6P6xFt1OPkgec0978fbIwEsw8Bd4/edit" title="Olin Alumni Event Calendar">Event Calendar</a></p>
+              <h3>Alumni Weekend</h3>
+              <p><em>September 18-20, 2015 @ Olin College</em></p>
+              <p>Alumni Weekend is an opportunity for alumni from all years to reunite on campus. Check out <a href="https://www.flickr.com/photos/olin/sets/72157647530855659/">photos from Alumni Weekend 2014</a>.
+              <p>For questions or to help with planning, contact <a href="mailto:avinash.uttamchandani@alumni.olin.edu" title="Avi Uttamchandani">Avi Uttamchandani</a> (‘10) or <a href="mailto:brian.fahrenbach@alumni.olin.edu" title="Brian Fahrenbach">Brian Fahrenbach</a> (‘10).</p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div class="row">
-        <div class="col-12" style="overflow: hidden;">
-          <hr>
-          <h3><small>Get Alumni Association Facebook Updates</small></h3>
-          <div class="fb-like" data-href="https://www.facebook.com/pages/Olin-Alumni-Association/211112075577145" data-send="false" data-width="450" data-show-faces="true"></div>
+        <!-- Clubs/Orgs Rolodex -->
+        <div id="rolodex" class="section-panel">
+          <div class="row">
+            <div class="col-xs-12">
+              <h2>Olin Organizations</h2>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-6">
+               <card-list id="orgs1"></card-list>
+
+               <script>riot.mount('#orgs1', 'card-list', {
+                cards: [
+                  {
+                    title: "SLAC",
+                    subtitle: "Stay Late and Create",
+                    description: "Every Wednesday night, students working together on projects, clubs, and activities in the Library",
+                    links: {
+                      www: "http://slac.io/",
+                      github: "olin/slac",
+                    }
+                  },
+                  {
+                    title: "REVO",
+                    subtitle:  "Research of Electrical Vehicles at Olin",
+                    description: "A team that researches and builds electric vehicles at Olin.",
+                    links: {
+                      www: "http://www.olinrevo.org/",
+                      facebook: "OlinREVO",
+                      twitter: "olinrevo",
+                    }
+                  },
+                  {
+                    title: "HPV",
+                    subtitle:  "Human Powered Vehicles",
+                    description: "A team that designs, builds, and races a vehicle at ASME's Human Powered Vehicle Challenge.",
+                    links: {
+                      www: "http://hpv.olin.edu/",
+                      facebook: "OlinHPV",
+                    }
+                  }
+                ]})
+              </script>
+            </div>
+            <div class="col-xs-6">
+               <card-list id="orgs2"></card-list>
+
+               <script>riot.mount('#orgs2', 'card-list', {
+                cards: [
+                  {
+                    title: "Library",
+                    description: "Olin College Library: #Rewrite the Library to be a vibrant community space",
+                    links: {
+                      www: "http://library.olin.edu/",
+                      facebook: "pages/Olin-College-of-Engineering-Library/228190150586183",
+                      twitter: "OlinCollegeLib",
+                    }
+                  },
+                  {
+                    title: "ORO",
+                    subtitle: "Olin Rock Orchestra",
+                    description: "A group of engineering students on a mission to marry rock and classical music.",
+                    links: {
+                      www: "http://www.olinrevo.org/",
+                      facebook: "pages/Olin-Rock-Orchestra/138124762925294",
+                      youtube: "https://www.youtube.com/channel/UC5GSw5wx86lpqF_mmHNt7RA"
+                    }
+                  },
+                  {
+                    title: "FWOP",
+                    subtitle: "Franklin W Olin Players",
+                    description: "Olin's theatre group",
+                    links: {
+                      facebook: "pages/Franklin-W-Olin-Players-FWOP/123391607781704"
+                    }
+                  }
+                ]})
+              </script>
+            </div>
+          </div>
         </div>
-      </div>
+
+        <div id="donate" class="section-panel">
+          <div class="row">
+            <div class="col-sm-12">
+              <h2>Donate to Olin</h2>
+              <p>Alumni help improve student life and advance Olin’s mission to transform engineering education through donations and involvement in activities. Every contribution helps by increasing our alumni giving participation rate.</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 col-md-6">
+              <h3>How to Donate</h3>
+              <p>Donate at <a href="http://giving.olin.edu">http://giving.olin.edu</a>. Olin’s fiscal year ends on June 31st, 2015, so donate before then to count for this fiscal year. You can <a href="https://my.olin.edu/ICS/Olin_Family/Alumni_Community.jnz?portlet=Contribution_History">check your past donation history</a> <em>(login first initial lastname, like "pmiller", or <a href="https://pm.olin.edu/pm/">reset password</a>)</em>.</p>
+            </div>
+            <div class="col-sm-12 col-md-6">
+              <h3>Donation Impact</h3>
+              <ul>
+                <li><strong><a href="http://www.olin.edu/invest/who/alumni/class-gifts/">Class Gifts</a></strong> improve Olin for current students.</li>
+                <li><strong><a href="http://www.olin.edu/invest-olin/ways-invest/student-projects/">Extracurricular Activities</a></strong> like Olin Robotic Sailing, Research of Electric Vehicles at Olin, Human Powered Vehicles, and Mini-Baja are in part funded and advised by alumni.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Career Resources -->
+        <div id="career" class="section-panel">
+          <div class="row">
+            <div class="col-sm-12 col-md-8">
+              <h2>Career Resources</h2>
+              <p>Post Graduate Planning can help alumni looking for jobs or in grad school, as well!</p>
+
+              <ul>
+                <li><a href="http://www.olin.edu/collaborate/careers-graduate-studies/opps-alumni/" title="Olin College Post Graduate Planning Alumni Opportunities">PGP&rsquo;s alumni information and recent higlights</a> &mdash; Features job listings, and links to other PGP resources</li>
+                <li><a href="Resume Tips" title="Olin Alumni Resume Tips">Resume Tips</a> from Olin Alumni.</li>
+              </ul>
+
+              <h3>Grad School</h3>
+              <ul>
+                <li><a href="http://www.olin.edu/collaborate/careers-graduate-studies/graduate-school/" title="Olin College Post Graduate Planning Grad School Resources">PGP&rsquo;s information about grad school</a> &mdash; Information on applying, engineering, med school, law school, business school, and other.</li>
+                <li><a href="https://www.facebook.com/groups/olin.gradschool/">Olin Grad School Facebook Group</a> &mdash; Discussions about applying to, attending, and what comes after graduate school.</li>
+              </ul>
+
+              <h3>Software Engineering</h3>
+              <p>Many Oliners become software engineers, designers, data scientists, and product managers.</p>
+              <ul>
+                <li><a href="http://www.olinalumni.org/resources/software_engineering/" title="Olin Alumni Software Engineering Resources">Software Engineering Resources</a> &mdash; Information from Olin Alumni on applying, interviewing, and working in software related jobs.</li>
+                <li><a href="https://www.facebook.com/groups/olinsocialmediaclub">Olin Social Media Club</a> &mdash; Tech news and discussion.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mailing Lists -->
+        <div id="mailinglists" class="row section-panel">
+          <div class="col-sm-12 col-md-6 col-lg-7">
+            <h2>Stay in Touch</h2>
+            <p>Join a mailing list for your location in the world. Ask questions about housing, hear about alumni events, and share local news.</p>
+            <div class="row">
+              <div class="col-xs-6">
+                <ul class="mailinglists__list">
+                  <li><a href="https://groups.google.com/forum/#!forum/olinalumni-boston/" title="Boston Mailing List">Boston</a></li>
+                  <hr>
+                  <li><a href="https://groups.google.com/forum/#!forum/olinalumni-midwest" title="Midwest Mailing List">Midwest</a></li>
+                  <hr>
+                  <li><a href="https://groups.google.com/forum/#!forum/olinalumni-nyc" title="New York City Mailing List">New York City</a></li>
+                  <hr>
+                  <li><a href="https://groups.google.com/forum/#!forum/olinalumni-pgh" title="Pittsburgh Mailing List">Pittsburgh</a></li>
+                </ul>
+              </div>
+              <div class="col-xs-6">
+                <ul class="mailinglists__list">
+                  <li><a href="https://groups.google.com/forum/#!forum/olinalumni-bayarea" title="San Francisco Bay Area Mailing List">San Francisco Bay Area</a></li>
+                  <hr>
+                  <li><a href="https://groups.google.com/forum/#!forum/olinalumni-seattle" title="Seattle Mailing List">Seattle</a></li>
+                  <hr>
+                  <li><a href="https://groups.google.com/forum/#!forum/olinalumni-socal" title="Southern California Mailing List">Southern California</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-5 hidden-xs hidden-sm" id="mailinglists__map">
+            <img src="/img/us-map.svg" height="250" alt="Map of Mailing Lists">
+          </div>
+        </div>
+
+        <div id="olinalumnicouncil" class="section-panel">
+          <div class="row">
+            <div class="col-sm-12">
+              <h2>Olin Alumni Council</h2>
+              <p>The Olin Alumni Council is the representative body for Olin Alumni. Hit us up at <a href="mailto:oac@lists.olin.edu">oac@lists.olin.edu</a> to get in touch, or contact your class rep directly. The OAC by-laws are available <a href="https://github.com/olinalumni/oac-charter">on github</a>.</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 col-md-6">
+              <h3>Board Members</h3>
+              <ul>
+                <li>President &mdash; Greg Marra, '10</li>
+                <li>President-Elect &mdash; Bennett Chabot, '09</li>
+                <li>Past-President &mdash; Adam J. College, '07</li>
+                <li>Secretary &mdash; <em>Pending Spring 2015 Special Election</em></li>
+                <li>Treasurer &mdash; Eric Kolker, '13</li>
+              </ul>
+
+              <h3>Coordinators</h3>
+              <ul>
+                <li><strong>Alumni Coordinator &mdash; Bennet Chabot &lsquo;09</strong> &mdash; Connect alumni with each other, professionally and socially. Initiatives may involve more professional development opportunities or more cross-class social events.</li>
+                <li><strong>Students &amp; Friends Coordinator &mdash; Eric Kolker &lsquo;13</strong> &mdash; Connect alumni with current students, and other friends of the college. Initiatives may involve more programs like Banter, helping current students with job-searching, or seeing what opportunities exist between Parents and Alumni.
+                <li><strong>College Coordinator &mdash; Greg Marra &lsquo;10 <em>(interim)</em></strong> &mdash; Connect alumni with the college’s administration. Initiatives may involve coordinating Development activities with the college, or finding ways alumni can benefit from on-campus resources like the Library. <em>Greg is filling this role on an interim basis. If you are interesting in helping connect alumni with the college, please reach out to Greg.</em></li>
+              </ul>
+            </div>
+
+            <div class="col-sm-12 col-md-6">
+              <h3>Class Reps</h3>
+              <ul>
+                <li>2006 &mdash; Kate Blazek, Polina Segalova</li>
+                <li>2007 &mdash; Dan Lin, Sara Wheeland</li>
+                <li>2008 &mdash; Avery Anderson</li>
+                <li>2009 &mdash; David Nelson</li>
+                <li>2010 &mdash; Avinash Uttamchandani, Brian Fahrenbach</li>
+                <li>2011 &mdash; <em>Pending Spring 2015 Special Election</em></li>
+                <li>2012 &mdash; Ananya Kejriwal, Meghan Murray</li>
+                <li>2013 &mdash; Hannah Sarver, Margaret-Ann Seger</li>
+                <li>2014 &mdash; Larissa Little, Brendan Quinlivan</li>
+              </ul>
+
+              <h3>Committees &amp; Points of Contact</h3>
+              <ul>
+                <li>Events &mdash; Polina Segalova</li>
+                <li>Communications &mdash; Greg Marra</li>
+                <li>Development and Philanthropy &mdash; Greg Marra</li>
+                <li>Banter &mdash; Sara Wheeland</li>
+                <li>Student Recruiting &mdash; Hannah Sarver, Margaret-Ann Seger</li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
       <div class="row">
         <div class="col-12">
@@ -185,12 +359,9 @@
           <p class="text-muted"><small>By the Olin Alumni Association. Contact <a href="http://grgmrr.com">Greg Marra</a>. Code <a href="https://github.com/olinalumni/olinalumni.github.io">on GitHub</a>.</small></p>
         </div>
       </div>
-    </div> <!-- /container -->
+    </div>
 
-    <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min.js"></script>
-
-    <div id="fb-root"></div>
+    <!-- Analytics -->
     <script>(function(d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
