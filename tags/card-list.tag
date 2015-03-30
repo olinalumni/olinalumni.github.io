@@ -1,7 +1,8 @@
 <card-list>
     <div each={{opts.cards}} class="card row">
         <div>
-            <h4><a href="{links.www}">{{title}} <small if={subtitle}>{{subtitle}}</small></a></h4>
+            <h4 if={links.title}><a href="{links.title}">{{title}} <small if={subtitle}>{{subtitle}}</small></a></h4>
+            <h4 if={!links.title}>{{title}} <small if={subtitle}>{{subtitle}}</small></h4>
             <p if={description}>{{description}}</p>
             <div>
               <ul class= "links list-unstyled">
