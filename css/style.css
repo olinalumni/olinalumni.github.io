@@ -10,11 +10,6 @@
 	padding: 3px;
 }
 
-.section-margins {
-    margin-left: 1rem;
-    margin-right: 1rem;
-}
-
 .section-panel {
     margin: 2rem 1rem 0 1rem;
     padding: 2rem;
@@ -76,4 +71,9 @@
 
 #olinalumnicouncil {
 	border-color: #BEBE3F;
+}
+
+#footer {
+    margin-left: 1rem;
+    margin-right: 1rem;
 }
