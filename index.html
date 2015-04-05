@@ -26,16 +26,18 @@
                     <link rel="apple-touch-icon-precomposed" href="/img/olin_logo_57.png">
                                    <link rel="shortcut icon" href="/img/favicon.ico">
     <!-- Script Imports -->
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/riot/2.0.13/riot+compiler.min.js"></script>
     <script src="tags/card-list.tag" type="riot/tag"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
   </head>
 
   <body>
-    <nav class="navbar navbar-default">
+    <nav class="navbar navbar-default" role="navigation">
       <div class="container">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#collapse-nav">
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
@@ -45,7 +47,7 @@
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <div id="collapse-nav" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li><a href="#events">Events</a></li>
             <li><a href="#rolodex">Interests</a></li>
