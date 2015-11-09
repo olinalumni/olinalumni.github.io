@@ -77,6 +77,10 @@
 	border-color: #BEBE3F;
 }
 
+#faq { /* for subpage /resources/banter */
+	border-color: #00653E;
+}
+
 #footer {
     margin-left: 1rem;
     margin-right: 1rem;
