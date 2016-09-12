@@ -77,8 +77,12 @@
 	border-color: #BEBE3F;
 }
 
-#faq { /* for subpage /resources/banter */
+#signup { /* for subpage /resources/banter */
 	border-color: #00653E;
+}
+
+#faq { /* for subpage /resources/banter */
+	border-color: #6BC1D3;
 }
 
 #footer {
