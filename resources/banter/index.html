@@ -13,7 +13,7 @@
     <link href="http://netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
     <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
     <link href="../../css/style.css" rel="stylesheet">
-    <link href="css/banterstyle.css" rel="stylesheet">
+    <link href="../../resources/banter/css/banterstyle.css" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -84,55 +84,54 @@ There are two types of matches: </p>
           <div class="row">
             <div class="col-sm-12">
                 <h2>Sign up timeline</h2>
-
                 <table class="fullWidth pure-table pure-table-bordered">
-    <thead>
-        <tr>
-                    <th>Date (2018)</th>
-                    <th>Mentee (students) Deadlines</th>
-                    <th>Mentee (recent alums 2014-2018) Deadlines</th>
-                    <th>Mentor (alums 2006-2013) Deadlines</th> 
-                  </tr>
+                  <thead>
+                    <tr>
+                      <th>Date (2018)</th>
+                      <th>Mentee (students) Deadlines</th>
+                      <th>Mentee (recent alums 2014-2018) Deadlines</th>
+                      <th>Mentor (alums 2006-2013) Deadlines</th> 
+                    </tr>
                 </thead>
-      <tbody>
-                  <tr id='20180914'>
+                <tbody>
+                  <tr class='20180801-20180914'>
                     <td>September 14</td>
                     <td><a href='https://goo.gl/forms/xZ7jOyKaipoexUAK2'>Onboard survey deadline</a></td> 
                     <td><a href='https://goo.gl/forms/0RxUEysgi4S010dE3'>Onboard survey deadline</a></td> 
                     <td><a href='https://goo.gl/forms/zNK5xyzDiEcvASGc2'>Onboard survey deadline</a></td> 
                   </tr>
-                  <tr id='20180928'>
+                  <tr class='20180921-20180928'>
                     <td>September 21</td>
                     <td>Mentor profiles public</td> 
                     <td>Mentor profiles public</td> 
                     <td></td>
                   </tr>
-                  <tr id='20180928'>
+                  <tr class='20180921-20180928'>
                     <td>September 28</td>
                     <td>Mentor selection deadline</td> 
                     <td>Mentor selection deadline</td> 
                     <td></td>
                   </tr>
-                  <tr id='20181008'>
+                  <tr class='20181001-20181008'>
                     <td>October 1</td>
                     <td>Match results emailed</td> 
                     <td>Match results emailed</td> 
                     <td>Match results emailed</td>
                   </tr>
-                  <tr id='20181008'>
+                  <tr class='20181001-20181008'>
                     <td>October 8</td>
                     <td>Deadline to schedule first meeting</td> 
                     <td>Deadline to schedule first meeting</td> 
                     <td></td>
                   </tr>
-                  <tr id='20190601'>
+                  <tr class='20181008-20190601'>
                     <td>~Monthly till May 2019</td>
                     <td>30 minute video chat</td>
                     <td>30 minute video chat</td>
                     <td>30 minute video chat</td>
                   </tr>
                 </tbody>
-                </table>
+              </table>
                 
                 <table class="mobileWidth pure-table pure-table-bordered">
     <thead>
@@ -142,27 +141,27 @@ There are two types of matches: </p>
                   </tr>
                 </thead>
       <tbody>
-                  <tr id='20180914'>
+                  <tr class='20180801-20180803'>
                     <td>September 14</td>
                     <td><a href='https://goo.gl/forms/xZ7jOyKaipoexUAK2'>Onboard survey deadline</a></td> 
                   </tr>
-                  <tr id='20180928'>
+                  <tr class='20180801-20180803'>
                     <td>September 21</td>
                     <td>Mentor profiles public</td> 
                   </tr>
-                  <tr id='20180928'>
+                  <tr class='20180801-20180914'>
                     <td>September 28</td>
                     <td>Mentor selection deadline</td>
                   </tr>
-                  <tr id='20181008'>
+                  <tr class='20180801-20180914'>
                     <td>October 1</td>
                     <td>Match results emailed</td> 
                   </tr>
-                  <tr id='20181008'>
+                  <tr class='20180801-20180914'>
                     <td>October 8</td>
                     <td>Deadline to schedule first meeting</td> 
                   </tr>
-                  <tr id='20190601'>
+                  <tr class='20180801-20180914'>
                     <td>~Monthly till May 2019</td>
                     <td>30 minute video chat</td>
                   </tr>
@@ -248,13 +247,35 @@ There are two types of matches: </p>
           var year = pad(d.getFullYear());
           return parseInt(year+month+day);
         }
+        function getStartDate(dd) {
+          var res = dd.split('-');
+          return parseInt(res[0]);
+        }
+        function getEndDate(dd) {
+          var res = dd.split('-');
+          return parseInt(res[1]);
+        }
         var dd = getIntDate();
-        var all = document.getElementsByTagName("*");
+        var all = document.getElementsByTagName("tr");
 
         for (var i=0; i < all.length; i++) {
           var elm = all[i];
-          if (elm.id.length && parseInt(elm.id) < dd) {
-            document.getElementById(elm.id).classList.add('past');
+          if (!elm.className) {
+            continue;
+          }
+          var startDate = getStartDate(elm.className);
+          var endDate = getEndDate(elm.className);
+          if (endDate < dd) {
+            eelms = document.getElementsByClassName(elm.className);
+            for (var j=0; j<eelms.length; j++) {
+              eelms[j].classList.add('past');
+            }
+          }
+          if (startDate < dd && endDate > dd) {
+            eelms = document.getElementsByClassName(elm.className);
+            for (var j=0; j<eelms.length; j++) {
+              eelms[j].classList.add('current');
+            }
           }
         }
       </script>
