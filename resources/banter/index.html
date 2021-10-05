@@ -1,224 +1,239 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
 
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-177608645-1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'UA-177608645-1');
+<head>
 
-</script>
-    <meta charset="utf-8">
-    <title>Olin Banter</title>
-    <meta name="description" content="Information on the Banter program of Olin College">
-    <meta property="og:image" content="/img/olin_logo_512.png" />
-    <meta property="og:title" content="Olin Banter" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="http://olinalumni.org/resources/banter" />
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-177608645-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'UA-177608645-1');
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
-    <link href="http://olinalumni.org/css/style.css" rel="stylesheet">
-    <link href="http://olinalumni.org/resources/banter/css/banterstyle.css" rel="stylesheet">
+  </script>
+  <meta charset="utf-8">
+  <title>Olin Banter</title>
+  <meta name="description" content="Information on the Banter program of Olin College">
+  <meta property="og:image" content="/img/olin_logo_512.png" />
+  <meta property="og:title" content="Olin Banter" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="http://olinalumni.org/resources/banter" />
 
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
+  <link href="http://olinalumni.org/css/style.css" rel="stylesheet">
+  <link href="http://olinalumni.org/resources/banter/css/banterstyle.css" rel="stylesheet">
+
+  <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+  <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    <!-- Fav and touch icons -->
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/img/olin_logo_144.png">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/img/olin_logo_114.png">
-      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/img/olin_logo_72.png">
-                    <link rel="apple-touch-icon-precomposed" href="/img/olin_logo_57.png">
-                                   <link rel="shortcut icon" href="/img/favicon.ico">
-    <!-- Script Imports -->
-    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/riot/2.0.13/riot+compiler.min.js"></script>
-    <script src="tags/card-list.tag" type="riot/tag"></script>
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-  </head>
+  <!-- Fav and touch icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/img/olin_logo_144.png">
+  <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/img/olin_logo_114.png">
+  <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/img/olin_logo_72.png">
+  <link rel="apple-touch-icon-precomposed" href="/img/olin_logo_57.png">
+  <link rel="shortcut icon" href="/img/favicon.ico">
+  <!-- Script Imports -->
+  <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/riot/2.0.13/riot+compiler.min.js"></script>
+  <script src="tags/card-list.tag" type="riot/tag"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+</head>
 
-  <body>
-    <nav class="navbar navbar-default" role="navigation">
-      <div class="container">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#collapse-nav">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#">Olin Banter</a>
-        </div>
-
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div id="collapse-nav" class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            <li><a href="#intro">Intro</a></li>
-            <li><a href="#matches">Sign Up!</a></li>
-            <li><a href="#faq">FAQ</a></li>
-          </ul>
-        </div><!-- /.navbar-collapse -->
-      </div><!-- /.container -->
-    </nav>
-
+<body>
+  <nav class="navbar navbar-default" role="navigation">
     <div class="container">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#collapse-nav">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Olin Banter</a>
+      </div>
 
-       <!-- Intro -->
-        <div id="intro" class="section-panel">
-          <div class="row">
-            <div class="col-sm-12">
-              <h2>Banter</h2>
-              <h4>TL;DR.</h4>
-              <p>Meet an <strong>Olin alum</strong>. Find an <strong>awesome mentor</strong>. Discuss life at Olin, how to adult, what you did last week, and everything in between. Hindsight is 20/20! Borrow some perspective from someone who's been there. We match you with a mentor that you meet each month on video for the academic year.</p>
-              <br/><br/><h4>more...</h4>
-              <p>Banter is a mentoring program that connects Oliners&mdash;who better to help out than someone who's been there?</p>
-              <p>The program provides professional and personal support to students and alumni. We encourage meetings to happen on a regular cadence and suggest once a month (video chat, phone call, in person meeting, or email conversation) though it’s up to each match to determine what works best for them.<p>
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div id="collapse-nav" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li><a href="#intro">Intro</a></li>
+          <li><a href="#matches">Sign Up!</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container -->
+  </nav>
 
-<p><strong>Alumni:</strong> You have the opportunity to reconnect inside the Olin bubble and share your professional and personal experiences with students and fellow alumni.</p>
+  <div class="container">
 
-<p><strong>Students:</strong> You have exclusive access to a network of Olin alumni ready to share their experiences from life on campus and beyond. Get advice on which courses are most helpful when you have no idea what field to go into, how to deal with that difficult teammate, the politics of an internship or how to cope with the challenges of learning today.</p>
-            </div>
-          </div>
+    <!-- Intro -->
+    <div id="intro" class="section-panel">
+      <div class="row">
+        <div class="col-sm-12">
+          <h2>Banter</h2>
+          <h4>TL;DR.</h4>
+          <p>Meet an <strong>Olin alum</strong>. Find an <strong>awesome mentor</strong>. Discuss life at Olin, how to
+            adult, what you did last week, and everything in between. Hindsight is 20/20! Borrow some perspective from
+            someone who's been there. We match you with a mentor that you meet each month on video for the academic
+            year.</p>
+          <br /><br />
+          <h4>more...</h4>
+          <p>Banter is a mentoring program that connects Oliners&mdash;who better to help out than someone who's been
+            there?</p>
+          <p>The program provides professional and personal support to students and alumni. We encourage meetings to
+            happen on a regular cadence and suggest once a month (video chat, phone call, in person meeting, or email
+            conversation) though it’s up to each match to determine what works best for them.
+          <p>
+
+          <p><strong>Alumni:</strong> You have the opportunity to reconnect inside the Olin bubble and share your
+            professional and personal experiences with students and fellow alumni.</p>
+
+          <p><strong>Students:</strong> You have exclusive access to a network of Olin alumni ready to share their
+            experiences from life on campus and beyond. Get advice on which courses are most helpful when you have no
+            idea what field to go into, how to deal with that difficult teammate, the politics of an internship or how
+            to cope with the challenges of learning today.</p>
         </div>
+      </div>
+    </div>
 
-       <!-- Surveys and News -->
-        <div id="matches" class="section-panel">
-          <div class="row">
-            <div class="col-sm-12">
-                <h2>Sign up timeline</h2>
-                <table class="fullWidth pure-table pure-table-bordered">
-                  <thead>
-                    <tr>
-                      <th>Date (2020)</th>
-                      <th>Mentee (Students) Deadlines</th>
-                      <th>Mentee (Alumni 2017-2020) Deadlines</th>
-                      <th>Mentor (Alumni 2006-2016) Deadlines</th>
-                    </tr>
-                </thead>
-                <tbody>
-                  <tr class='20200801-20200918'>
-                    <td>September 17th</td>
-                    <td><a href='https://forms.gle/3edK8PDoPjakRaFS6'>Onboard survey deadline</a></td>
-                    <td><a href='https://forms.gle/8t8BiosZd6utD2sr7'>Onboard survey deadline</a></td>
-                    <td><a href='https://forms.gle/rp275WLvVr98ubjV6'>Onboard survey deadline</a></td>
-                  </tr>
-                  <tr class='20200920-20200922'>
-                    <td>September 21st</td>
-                    <td>Mentor profiles public</td>
-                    <td></td>
-                    <td></td>
-                  </tr>
-                  <tr class='20200920-20200929'>
-                    <td>September 28th</td>
-                    <td><a href='https://forms.gle/n1yj22aCmTobsrEQ7'>Mentor selection deadline</a></td>
-                    <td><a href='https://forms.gle/n1yj22aCmTobsrEQ7'>Mentor selection deadline</a></td>
-                    <td></td>
-                  </tr>
-                  <tr class='20200930-20201002'>
-                    <td>October 1st</td>
-                    <td>Match results emailed</td>
-                    <td>Match results emailed</td>
-                    <td>Match results emailed</td>
-                  </tr>
-                  <tr class='20200930-20201008'>
-                    <td>October 7th</td>
-                    <td>Deadline to schedule first meeting</td>
-                    <td>Deadline to schedule first meeting</td>
-                    <td></td>
-                  </tr>
-                  <tr class='20201007-20210601'>
-                    <td>~Monthly till May 2021</td>
-                    <td>30 minute video chat</td>
-                    <td>30 minute video chat</td>
-                    <td>30 minute video chat</td>
-                  </tr>
-                </tbody>
-              </table>
-
-            <table class="mobileWidth pure-table pure-table-bordered">
-              <thead>
-                <tr>
-                  <th>Date (2020)</th>
-                  <th>Mentee (Students) Deadliness</th>
-                </tr>
+    <!-- Surveys and News -->
+    <div id="matches" class="section-panel">
+      <div class="row">
+        <div class="col-sm-12">
+          <h2>Sign up timeline</h2>
+          <table class="fullWidth pure-table pure-table-bordered">
+            <thead>
+              <tr>
+                <th>Date (2021)</th>
+                <th>Mentee (Students) Deadlines</th>
+                <th>Mentee (Alumni 2018-2021) Deadlines</th>
+                <th>Mentor (Alumni 2006-2017) Deadlines</th>
+              </tr>
             </thead>
             <tbody>
-              <tr class='20200801-20200918'>
-                <td>September 17th</td>
+              <tr class='20211006-20211013'>
+                <td>October 13th</td>
+                <td><a href='https://forms.gle/2AsFinn7odq9vVWk6'>Onboard survey deadline</a></td>
+                <td><a href='https://forms.gle/99XEmWAu9goo82nT8'>Onboard survey deadline</a></td>
+                <td><a href='https://forms.gle/NTDkJnotLS3akaWs7'>Onboard survey deadline</a></td>
+              </tr>
+              <tr class='20211016-20211021'>
+                <td>October 16th</td>
+                <td>Mentor profiles public</td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr class='20211016-20211023'>
+                <td>October 23rd</td>
+                <td>Mentor selection deadline</td>
+                <td>Mentor selection deadline</td>
+                <!-- <td><a href='https://forms.gle/n1yj22aCmTobsrEQ7'>Mentor selection deadline</a></td> -->
+                <!-- <td><a href='https://forms.gle/n1yj22aCmTobsrEQ7'>Mentor selection deadline</a></td> -->
+                <td></td>
+              </tr>
+              <tr class='20211023-20211024'>
+                <td>October 24th</td>
+                <td>Match results emailed</td>
+                <td>Match results emailed</td>
+                <td>Match results emailed</td>
+              </tr>
+              <tr class='20211024-20211031'>
+                <td>October 31st</td>
+                <td>Deadline to schedule first meeting</td>
+                <td>Deadline to schedule first meeting</td>
+                <td></td>
+              </tr>
+              <tr class='20211031-20220601'>
+                <td>~Monthly till May 2022</td>
+                <td>30 minute video chat</td>
+                <td>30 minute video chat</td>
+                <td>30 minute video chat</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <table class="mobileWidth pure-table pure-table-bordered">
+            <thead>
+              <tr>
+                <th>Date (2021)</th>
+                <th>Mentee (Students) Deadliness</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class='20211006-20211013'>
+                <td>October 13th</td>
                 <td><a href='https://forms.gle/3edK8PDoPjakRaFS6'>Onboard survey deadline</a></td>
               </tr>
-              <tr class='20200920-20200922'>
-                <td>September 21st</td>
+              <tr class='20211016-20211021'>
+                <td>October 16th</td>
                 <td>Mentor profiles public</td>
               </tr>
-              <tr class='20200927-20200929'>
-                <td>September 28th</td>
+              <tr class='20211016-20211023'>
+                <td>October 23rd</td>
+                <td><a href='https://forms.gle/n1yj22aCmTobsrEQ7'>Mentor selection deadline</a></td>
+              </tr>
+              <tr class='20211023-20211024'>
+                <td>October 24th</td>
+                <td>Match results emailed</td>
+              </tr>
+              <tr class='20211024-20211031'>
+                <td>October 31st</td>
+                <td>Deadline to schedule first meeting</td>
+              </tr>
+              <tr class='20211031-20220601'>
+                <td>~Monthly till May 2022</td>
+                <td>30 minute video chat</td>
+              </tr>
+            </tbody>
+          </table>
+          <br />
+          <table class="mobileWidth pure-table pure-table-bordered">
+            <thead>
+              <tr>
+                <th>Date (2021)</th>
+                <th>Mentee (Alumni 2018-2021) Deadlines</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class='20211006-20211013'>
+                <td>October 13th</td>
+                <td><a href='https://forms.gle/8t8BiosZd6utD2sr7'>Onboard survey deadline</a></td>
+              </tr>
+              <tr class='20211016-20211021'>
+                <td>October 16th</td>
+                <td>Mentor profiles public</td>
+              </tr>
+              <tr class='20211016-20211023'>
+                <td>October 23rd</td>
                 <td><a href='https://forms.gle/n1yj22aCmTobsrEQ7'>Mentor selection deadline</a></td>
               </tr>
               <tr class='20201001-20201002'>
                 <td>October 1st</td>
                 <td>Match results emailed</td>
               </tr>
-              <tr class='20201007-20201008'>
-                <td>October 7th</td>
+              <tr class='20211024-20211031'>
+                <td>October 31st</td>
                 <td>Deadline to schedule first meeting</td>
               </tr>
-              <tr class='20201007-20210601'>
-                <td>~Monthly till May 2021</td>
+              <tr class='20211031-20220601'>
+                <td>~Monthly till May 2022</td>
                 <td>30 minute video chat</td>
               </tr>
             </tbody>
           </table>
-        <br/>
-              <table class="mobileWidth pure-table pure-table-bordered">
-                <thead>
-                  <tr>
-                    <th>Date (2020)</th>
-                    <th>Mentee (Alumni 2017-2020) Deadlines</th>
-                  </tr>
-              </thead>
-              <tbody>
-                <tr class='20200801-20200918'>
-                  <td>September 17th</td>
-                  <td><a href='https://forms.gle/8t8BiosZd6utD2sr7'>Onboard survey deadline</a></td>
-                </tr>
-                <tr class='20200921-20200922'>
-                  <td>September 21st</td>
-                  <td>Mentor profiles public</td>
-                </tr>
-                <tr class='20200928-20200929'>
-                  <td>September 28th</td>
-                  <td><a href='https://forms.gle/n1yj22aCmTobsrEQ7'>Mentor selection deadline</a></td>
-                </tr>
-                <tr class='20201001-20201002'>
-                  <td>October 1st</td>
-                  <td>Match results emailed</td>
-                </tr>
-                <tr class='20201001-20201008'>
-                  <td>October 7th</td>
-                  <td>Deadline to schedule first meeting</td>
-                </tr>
-                <tr class='20201007-20210601'>
-                  <td>~Monthly till May 2021</td>
-                  <td>30 minute video chat</td>
-                </tr>
-              </tbody>
-            </table>
-            <br/>
+          <br />
 
-            <table class="mobileWidth pure-table pure-table-bordered">
-              <thead>
-                <tr>
-                  <th>Date (2020)</th>
-                  <th>Mentor (Alumni 2006-2016) Deadlines</th>
-                </tr>
+          <table class="mobileWidth pure-table pure-table-bordered">
+            <thead>
+              <tr>
+                <th>Date (2021)</th>
+                <th>Mentor (Alumni 2006-2016) Deadlines</th>
+              </tr>
             </thead>
             <tbody>
               <tr class='20200801-20200918'>
@@ -229,100 +244,125 @@
                 <td>October 1st</td>
                 <td>Match results emailed</td>
               </tr>
-              <tr class='20201007-20210601'>
-                <td>~Monthly till May 2021</td>
+              <tr class='20211031-20220601'>
+                <td>~Monthly till May 2022</td>
                 <td>30 minute video chat</td>
               </tr>
             </tbody>
           </table>
-          <br/>
+          <br />
 
 
-            </div>
-          </div>
         </div>
-       <!-- FAQ -->
-        <div id="faq" class="section-panel">
-          <div class="row">
-            <div class="col-sm-12">
-                <h2>FAQ</h2>
-                <p> <h5>I’m a current student. Do I have to know what I want to do after Olin?</h5></p>
-                <p> Nope, but you should indicate on your slide that you don’t know your post-grad plans. How many people even know what they want to do next week? We don’t require you to know the future, but any questions you may have regarding life after Olin will certainly serve to enrich the conversation!</p>
-                <p>  <h5>How do pairs communicate? What do they talk about?</h5></p>
-                <p>  Most pairs video chat, but it will be up to each match to establish a monthly time and communication format that will work for them. We will provide encouragement and monthly topics that can be used as conversation starters. Each pair will set the tone for their meetings, but you should be thinking "coffee with a friend" rather than "business interview."</p>
-								<p> <h5>How long is the program? What is the time commitment?</h5></p>
-                <p> You’ll be getting your match in October and we’ll be checking in with you until August, but we hope you’ll keep in touch after Banter officially ends for the year. Expect to set aside one hour per month to meet or communicate with your match.</p>
-                <p> <h5>How does participation work? Who can participate?</h5></p>
-                <p> Students as well as Alumni from 2017-2020 can be mentees. Alumni from years 2006-2016 can be mentors.
-                  <br/></p>
-                <p> <h5>How are the pairings made?</h5></p>
-                <p> Step 1: fill out the survey
-<br/>Step 2: we send out slides highlighting each mentor, generated from the survey
-<br/>Step 3: first years read through profiles and excellence vote on who they would like to be paired with
-<br/>Step 4: we optimize the pairings
-<br/>Step 5: we send out introductory slides and emails to the matches
-<br/>Step 6: Banter! We send out monthly topics for conversation inspiration</p>
-                <p> <h5>Will I only be connected to 1 person the whole year?</h5></p>
-                <p> Each match persists for one year and will be the primary person you’re talking with.</p>
-                <br><br>
-                <p> This program is brought to you by: Tara Krishnan (‘13) and Sara Wheeland (‘07) </p>
-                <p> Have additional questions for us? Feel free to contact us! </p>
-                <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-                <style>
-                .fa {
-                  padding: 10px;
-                  font-size: 12px;
-                  width: 35px;
-                  text-align: center;
-                  text-decoration: none;
-                  margin: 2px 2px;
-                }
-
-                .fa:hover {
-                    opacity: 0.7;
-                }
-
-                .fa-facebook {
-                  background: #3B5998;
-                  color: white;
-                }
-
-                .fa-envelope {
-                  background: #55ACEE;
-                  color: white;
-                }
-
-                </style>
-                </head>
-                <body>
-
-                <!-- Add font awesome icons -->
-                <a href="https://www.facebook.com/groups/olinbanter" class="fa fa-facebook"></a>
-                <a href="mailto:banter@olin.edu" class="fa fa-envelope"></a>
-
-
-                </body>
-
-            </div>
-          </div>
-        </div>
-
-
-
-
-
+      </div>
+    </div>
+    <!-- FAQ -->
+    <div id="faq" class="section-panel">
       <div class="row">
-        <div class="col-xs-12">
-          <hr>
-          <p id="footer" class="text-muted"><small>By the Olin Alumni Association. Contact <a href="http://grgmrr.com">Greg Marra</a>. Code <a href="https://github.com/olinalumni/olinalumni.github.io">on GitHub</a>.</small></p>
+        <div class="col-sm-12">
+          <h2>FAQ</h2>
+          <p>
+          <h5>I’m a current student. Do I have to know what I want to do after Olin?</h5>
+          </p>
+          <p> Nope, but you should indicate on your slide that you don’t know your post-grad plans. How many people even
+            know what they want to do next week? We don’t require you to know the future, but any questions you may have
+            regarding life after Olin will certainly serve to enrich the conversation!</p>
+          <p>
+          <h5>How do pairs communicate? What do they talk about?</h5>
+          </p>
+          <p> Most pairs video chat, but it will be up to each match to establish a monthly time and communication
+            format that will work for them. We will provide encouragement and monthly topics that can be used as
+            conversation starters. Each pair will set the tone for their meetings, but you should be thinking "coffee
+            with a friend" rather than "business interview."</p>
+          <p>
+          <h5>How long is the program? What is the time commitment?</h5>
+          </p>
+          <p> You’ll be getting your match in October and we’ll be checking in with you until August, but we hope you’ll
+            keep in touch after Banter officially ends for the year. Expect to set aside one hour per month to meet or
+            communicate with your match.</p>
+          <p>
+          <h5>How does participation work? Who can participate?</h5>
+          </p>
+          <p> Students as well as Alumni from 2017-2020 can be mentees. Alumni from years 2006-2016 can be mentors.
+            <br />
+          </p>
+          <p>
+          <h5>How are the pairings made?</h5>
+          </p>
+          <p> Step 1: fill out the survey
+            <br />Step 2: we send out slides highlighting each mentor, generated from the survey
+            <br />Step 3: first years read through profiles and excellence vote on who they would like to be paired with
+            <br />Step 4: we optimize the pairings
+            <br />Step 5: we send out introductory slides and emails to the matches
+            <br />Step 6: Banter! We send out monthly topics for conversation inspiration
+          </p>
+          <p>
+          <h5>Will I only be connected to 1 person the whole year?</h5>
+          </p>
+          <p> Each match persists for one year and will be the primary person you’re talking with.</p>
+          <br><br>
+          <p> This program is brought to you by: Tara Krishnan (‘13) and Sara Wheeland (‘07) </p>
+          <p> Have additional questions for us? Feel free to contact us! </p>
+
+          <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+            <style>
+              .fa {
+                padding: 10px;
+                font-size: 12px;
+                width: 35px;
+                text-align: center;
+                text-decoration: none;
+                margin: 2px 2px;
+              }
+
+              .fa:hover {
+                opacity: 0.7;
+              }
+
+              .fa-facebook {
+                background: #3B5998;
+                color: white;
+              }
+
+              .fa-envelope {
+                background: #55ACEE;
+                color: white;
+              }
+            </style>
+          </head>
+
+          <body>
+
+            <!-- Add font awesome icons -->
+            <a href="https://www.facebook.com/groups/olinbanter" class="fa fa-facebook"></a>
+            <a href="mailto:banter@olin.edu" class="fa fa-envelope"></a>
+
+
+          </body>
+
         </div>
       </div>
     </div>
 
-    <!-- Analytics -->
-    <script>(function(d, s, id) {
+
+
+
+
+    <div class="row">
+      <div class="col-xs-12">
+        <hr>
+        <p id="footer" class="text-muted"><small>By the Olin Alumni Association. Contact <a
+              href="http://grgmrr.com">Greg Marra</a>. Code <a
+              href="https://github.com/olinalumni/olinalumni.github.io">on GitHub</a>.</small></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics -->
+  <script>(function (d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
       js = d.createElement(s); js.id = id;
@@ -330,65 +370,66 @@
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));</script>
 
-    <script type="text/javascript">
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', 'UA-37068470-1']);
-      _gaq.push(['_setDomainName', 'olinalumni.org']);
-      _gaq.push(['_trackPageview']);
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-37068470-1']);
+    _gaq.push(['_setDomainName', 'olinalumni.org']);
+    _gaq.push(['_trackPageview']);
 
-      (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-    </script>
+    (function () {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
 
-      <script>
-        function pad(d) {
-          var dd = d.toString();
-          if (dd.length == 1) {
-            return '0'+dd;
-          }
-          return dd;
-        }
-        function getIntDate() {
-          var d = new Date();
-          var day = pad(d.getDate());
-          var month = pad(d.getMonth()+1);
-          var year = pad(d.getFullYear());
-          return parseInt(year+month+day);
-        }
-        function getStartDate(dd) {
-          var res = dd.split('-');
-          return parseInt(res[0]);
-        }
-        function getEndDate(dd) {
-          var res = dd.split('-');
-          return parseInt(res[1]);
-        }
-        var dd = getIntDate();
-        var all = document.getElementsByTagName("tr");
+  <script>
+    function pad(d) {
+      var dd = d.toString();
+      if (dd.length == 1) {
+        return '0' + dd;
+      }
+      return dd;
+    }
+    function getIntDate() {
+      var d = new Date();
+      var day = pad(d.getDate());
+      var month = pad(d.getMonth() + 1);
+      var year = pad(d.getFullYear());
+      return parseInt(year + month + day);
+    }
+    function getStartDate(dd) {
+      var res = dd.split('-');
+      return parseInt(res[0]);
+    }
+    function getEndDate(dd) {
+      var res = dd.split('-');
+      return parseInt(res[1]);
+    }
+    var dd = getIntDate();
+    var all = document.getElementsByTagName("tr");
 
-        for (var i=0; i < all.length; i++) {
-          var elm = all[i];
-          if (!elm.className) {
-            continue;
-          }
-          var startDate = getStartDate(elm.className);
-          var endDate = getEndDate(elm.className);
-          if (endDate < dd) {
-            eelms = document.getElementsByClassName(elm.className);
-            for (var j=0; j<eelms.length; j++) {
-              eelms[j].classList.add('past');
-            }
-          }
-          if (startDate < dd && endDate > dd) {
-            eelms = document.getElementsByClassName(elm.className);
-            for (var j=0; j<eelms.length; j++) {
-              eelms[j].classList.add('current');
-            }
-          }
+    for (var i = 0; i < all.length; i++) {
+      var elm = all[i];
+      if (!elm.className) {
+        continue;
+      }
+      var startDate = getStartDate(elm.className);
+      var endDate = getEndDate(elm.className);
+      if (endDate < dd) {
+        eelms = document.getElementsByClassName(elm.className);
+        for (var j = 0; j < eelms.length; j++) {
+          eelms[j].classList.add('past');
         }
-      </script>
-  </body>
+      }
+      if (startDate < dd && endDate > dd) {
+        eelms = document.getElementsByClassName(elm.className);
+        for (var j = 0; j < eelms.length; j++) {
+          eelms[j].classList.add('current');
+        }
+      }
+    }
+  </script>
+</body>
+
 </html>
