@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Banter admin · Olin Alumni</title>
+  <link rel="shortcut icon" href="/img/favicon.ico">
+  <!--
+    This URL is public. Anyone can load it and read every line of this
+    source, and that is fine — nothing on this page is secret. The only
+    thing standing between a stranger and the applications table is RLS on
+    the server. If RLS is right, a guessable URL doesn't hurt; if it's
+    wrong, a secret URL doesn't help. Don't "fix" this by hiding the link.
+  -->
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #172d3b; background: #faf9f6; font: 1rem/1.5 system-ui, sans-serif; }
+    main { max-width: 64rem; margin: 2rem auto; padding: 0 1.25rem 3rem; }
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.5rem; }
+    a.back { display: inline-block; margin-bottom: 1rem; color: #174b66; }
+    label { display: block; font-weight: 600; margin-top: 1rem; }
+    input, select, button, textarea { font: inherit; padding: .5rem; border: 1px solid #71818a; border-radius: .25rem; }
+    button { background: #174b66; color: white; cursor: pointer; }
+    button.secondary { background: white; color: #174b66; }
+    button.remove { background: #a00; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+    th, td { border: 1px solid #cbcbcb; padding: .4rem .6rem; text-align: left; vertical-align: top; }
+    th { background: #e0e0e0; }
+    .row-inline { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+    .row-inline input { flex: 1 1 8rem; }
+    #login-panel input[type=email] { width: 20rem; max-width: 100%; }
+    #not-authorized { background: #fff3e0; border: 1px solid #d98c00; border-radius: .25rem; padding: 1rem; }
+    #save-status, #login-status { min-height: 1.5rem; }
+    #save-status.error { color: #a00; font-weight: 600; }
+    .table-responsive { overflow-x: auto; }
+    [hidden] { display: none !important; }
+    #filters { margin-top: 1rem; display: flex; gap: .75rem; flex-wrap: wrap; align-items: center; }
+  </style>
+</head>
+<body>
+<main>
+  <a class="back" href="/resources/banter/">&larr; Back to Banter</a>
+  <h1>Banter admin</h1>
+
+  <section id="login-panel">
+    <p>Sign in with the email address the organizers registered for you. We'll email a link — no password.</p>
+    <form id="login-form">
+      <label for="login-email">Email</label>
+      <input id="login-email" type="email" required autocomplete="email">
+      <button type="submit">Send magic link</button>
+    </form>
+    <p id="login-status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section id="not-authorized" hidden>
+    <p>You're signed in as <strong id="not-authorized-email"></strong>, but that account isn't set up as a
+      Banter organizer. Email <a href="mailto:banter@olin.edu">banter@olin.edu</a> if you think this is wrong.</p>
+    <button id="sign-out-1" type="button" class="secondary">Sign out</button>
+  </section>
+
+  <section id="dashboard" hidden>
+    <p class="row-inline">Signed in as <strong id="admin-email"></strong>
+      <button id="sign-out-2" type="button" class="secondary">Sign out</button></p>
+
+    <h2>Sign-up timeline</h2>
+    <p>Edit the deadlines shown on the public Banter page. Dates use the browser's native date picker, so there's
+      no way to type in something that isn't a valid date.</p>
+
+    <label for="cycle-year">Year (shown in the table header)</label>
+    <input id="cycle-year" type="number" min="2000" max="2100">
+
+    <div class="row-inline" style="margin-top:1rem">
+      <div><label for="col-0">Column 1 header</label><input id="col-0" type="text"></div>
+      <div><label for="col-1">Column 2 header</label><input id="col-1" type="text"></div>
+      <div><label for="col-2">Column 3 header</label><input id="col-2" type="text"></div>
+    </div>
+
+    <div class="table-responsive">
+      <table id="editor-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Display override</th>
+            <th>Column 1</th>
+            <th>Column 2</th>
+            <th>Column 3</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="editor-rows"></tbody>
+      </table>
+    </div>
+    <p><button id="add-row" type="button" class="secondary">Add milestone</button></p>
+
+    <p class="row-inline">
+      <button id="save-cycle" type="button">Save</button>
+      <button id="preview-cycle" type="button" class="secondary">Preview</button>
+    </p>
+    <p id="save-status" role="status" aria-live="polite"></p>
+
+    <div id="preview-wrap" hidden>
+      <h3>Preview</h3>
+      <div class="table-responsive">
+        <table id="preview-table" class="pure-table pure-table-bordered">
+          <thead><tr><th>Date</th></tr></thead>
+          <tbody><tr><td>—</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <h2>Applications</h2>
+    <div id="filters">
+      <label style="margin:0" for="filter-cohort">Cohort</label>
+      <select id="filter-cohort">
+        <option value="">All</option>
+        <option value="students">Current students</option>
+        <option value="young_alums">Recent alumni (mentee)</option>
+        <option value="mentor_alums">Alumni mentors</option>
+        <option value="alumni">Alumni (mentor pool)</option>
+      </select>
+      <label style="margin:0" for="filter-text">Search</label>
+      <input id="filter-text" type="search" placeholder="name, email, major…">
+      <button id="export-csv" type="button" class="secondary">Export CSV</button>
+    </div>
+    <p id="responses-status" role="status" aria-live="polite"></p>
+    <div class="table-responsive">
+      <table id="responses-table">
+        <thead>
+          <tr>
+            <th>Name</th><th>Email</th><th>Cohort</th><th>Grad year</th><th>Major</th><th>Time zone</th><th>Submitted</th><th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
+  import { SUPABASE_URL, ANON_KEY, renderTimeline } from '/resources/banter/js/banter.js';
+
+  const sb = createClient(SUPABASE_URL, ANON_KEY);
+  const CYCLE_KEY = 'banter_cycle';
+  const SAFE_HREF = /^(https?:|\/|mailto:)/;
+
+  const loginPanel = document.getElementById('login-panel');
+  const notAuthorized = document.getElementById('not-authorized');
+  const dashboard = document.getElementById('dashboard');
+
+  // --- Auth ---------------------------------------------------------------
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const status = document.getElementById('login-status');
+    status.textContent = 'Sending…';
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: location.origin + location.pathname,
+        shouldCreateUser: false,
+      },
+    });
+    status.textContent = error
+      ? `Couldn't send a link: ${error.message}`
+      : `Check ${email} for a sign-in link.`;
+  });
+
+  for (const id of ['sign-out-1', 'sign-out-2']) {
+    document.getElementById(id).addEventListener('click', () => sb.auth.signOut());
+  }
+
+  function render(session) {
+    loginPanel.hidden = !!session;
+    if (!session) {
+      notAuthorized.hidden = true;
+      dashboard.hidden = true;
+      return;
+    }
+    const isAdmin = session.user.app_metadata?.role === 'admin';
+    notAuthorized.hidden = isAdmin;
+    dashboard.hidden = !isAdmin;
+    if (!isAdmin) {
+      document.getElementById('not-authorized-email').textContent = session.user.email;
+      return;
+    }
+    document.getElementById('admin-email').textContent = session.user.email;
+    loadDashboard();
+  }
+
+  sb.auth.getSession().then(({ data: { session } }) => render(session));
+  sb.auth.onAuthStateChange((_event, session) => render(session));
+
+  // --- Deadline editor ------------------------------------------------------
+
+  const editorRows = document.getElementById('editor-rows');
+
+  function addRow(m = {}) {
+    const cells = m.cells || [{}, {}, {}];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="date" class="m-date" value="${m.date || ''}"></td>
+      <td><input type="text" class="m-display" value="${(m.display || '').replace(/"/g, '&quot;')}" placeholder="e.g. ~Monthly through May"></td>
+      ${[0, 1, 2].map((i) => `
+        <td>
+          <input type="text" class="m-label" data-col="${i}" value="${(cells[i]?.label || '').replace(/"/g, '&quot;')}" placeholder="label">
+          <input type="url" class="m-href" data-col="${i}" value="${(cells[i]?.href || '').replace(/"/g, '&quot;')}" placeholder="optional link">
+        </td>`).join('')}
+      <td><button type="button" class="remove">Remove</button></td>
+    `;
+    tr.querySelector('.remove').addEventListener('click', () => tr.remove());
+    editorRows.appendChild(tr);
+  }
+
+  document.getElementById('add-row').addEventListener('click', () => addRow());
+
+  function readCycleForm() {
+    const columns = [0, 1, 2].map((i) => document.getElementById(`col-${i}`).value.trim());
+    const milestones = [...editorRows.querySelectorAll('tr')].map((tr) => ({
+      date: tr.querySelector('.m-date').value,
+      display: tr.querySelector('.m-display').value.trim() || undefined,
+      cells: [0, 1, 2].map((i) => {
+        const label = tr.querySelector(`.m-label[data-col="${i}"]`).value.trim();
+        const href = tr.querySelector(`.m-href[data-col="${i}"]`).value.trim();
+        if (!label) return {};
+        return href ? { label, href } : { label };
+      }),
+    }));
+    return {
+      year: Number(document.getElementById('cycle-year').value),
+      columns,
+      milestones: milestones.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999')),
+    };
+  }
+
+  function validateCycle(cycle) {
+    if (!cycle.milestones.length) return 'Add at least one milestone.';
+    for (let i = 0; i < cycle.milestones.length; i++) {
+      const m = cycle.milestones[i];
+      if (!m.date) return `Row ${i + 1}: pick a date.`;
+      for (const cell of m.cells) {
+        if (cell.href && !SAFE_HREF.test(cell.href)) {
+          return `Row ${i + 1}: that link doesn't look like a valid URL.`;
+        }
+      }
+    }
+    return null;
+  }
+
+  document.getElementById('save-cycle').addEventListener('click', async () => {
+    const status = document.getElementById('save-status');
+    const cycle = readCycleForm();
+    const problem = validateCycle(cycle);
+    if (problem) {
+      status.textContent = problem;
+      status.classList.add('error');
+      return;
+    }
+    status.classList.remove('error');
+    status.textContent = 'Saving…';
+    const { error } = await sb.from('site_config')
+      .update({ value: cycle, updated_at: new Date().toISOString() })
+      .eq('key', CYCLE_KEY);
+    if (error) {
+      status.textContent = `Couldn't save: ${error.message}`;
+      status.classList.add('error');
+      return;
+    }
+    status.textContent = `Saved at ${new Date().toLocaleTimeString()}.`;
+  });
+
+  document.getElementById('preview-cycle').addEventListener('click', () => {
+    const cycle = readCycleForm();
+    const problem = validateCycle(cycle);
+    const wrap = document.getElementById('preview-wrap');
+    const status = document.getElementById('save-status');
+    if (problem) {
+      status.textContent = problem;
+      status.classList.add('error');
+      wrap.hidden = true;
+      return;
+    }
+    renderTimeline(document.getElementById('preview-table'), cycle);
+    wrap.hidden = false;
+  });
+
+  async function loadCycleIntoEditor() {
+    const { data, error } = await sb.from('site_config').select('value').eq('key', CYCLE_KEY).maybeSingle();
+    const status = document.getElementById('save-status');
+    if (error || !data) {
+      status.textContent = `Couldn't load the current timeline: ${error?.message || 'no config row found'}.`;
+      status.classList.add('error');
+      return;
+    }
+    const cycle = data.value;
+    document.getElementById('cycle-year').value = cycle.year || '';
+    [0, 1, 2].forEach((i) => { document.getElementById(`col-${i}`).value = cycle.columns?.[i] || ''; });
+    editorRows.innerHTML = '';
+    (cycle.milestones || []).forEach((m) => addRow(m));
+    if (!cycle.milestones?.length) addRow();
+  }
+
+  // --- Applications list ------------------------------------------------
+
+  let responses = [];
+
+  function matchesFilter(r) {
+    const cohort = document.getElementById('filter-cohort').value;
+    const text = document.getElementById('filter-text').value.trim().toLowerCase();
+    if (cohort && r.cohort !== cohort) return false;
+    if (!text) return true;
+    return [r.name, r.email, r.major].some((v) => (v || '').toLowerCase().includes(text));
+  }
+
+  function renderResponses() {
+    const filtered = responses.filter(matchesFilter);
+    const tbody = document.querySelector('#responses-table tbody');
+    tbody.innerHTML = '';
+    for (const r of filtered) {
+      const tr = document.createElement('tr');
+      const cells = [r.name, r.email, r.cohort, r.grad_year, r.major, r.timezone,
+        r.created_at ? new Date(r.created_at).toLocaleDateString() : ''];
+      for (const c of cells) {
+        const td = document.createElement('td');
+        td.textContent = c || '';
+        tr.appendChild(td);
+      }
+      const detailsTd = document.createElement('td');
+      const details = document.createElement('details');
+      const summary = document.createElement('summary');
+      summary.textContent = 'Full response';
+      const pre = document.createElement('pre');
+      pre.textContent = JSON.stringify(r.raw, null, 2);
+      details.append(summary, pre);
+      detailsTd.appendChild(details);
+      tr.appendChild(detailsTd);
+      tbody.appendChild(tr);
+    }
+    document.getElementById('responses-status').textContent =
+      `${filtered.length} of ${responses.length} application${responses.length === 1 ? '' : 's'}.`;
+    return filtered;
+  }
+
+  document.getElementById('filter-cohort').addEventListener('change', renderResponses);
+  document.getElementById('filter-text').addEventListener('input', renderResponses);
+
+  function toCsv(rows) {
+    const base = ['cohort', 'name', 'email', 'grad_year', 'major', 'timezone', 'created_at'];
+    const rawKeys = [...new Set(rows.flatMap((r) => Object.keys(r.raw || {})))];
+    const cols = [...base, ...rawKeys];
+    const esc = (v) => {
+      let s = v == null ? '' : String(v);
+      if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // formula-injection guard for Excel/Sheets
+      return '"' + s.replace(/"/g, '""') + '"';
+    };
+    const lines = [cols, ...rows.map((r) => cols.map((c) => (base.includes(c) ? r[c] : (r.raw || {})[c])))];
+    return '﻿' + lines.map((r) => r.map(esc).join(',')).join('\r\n'); // BOM: Excel reads UTF-8
+  }
+
+  document.getElementById('export-csv').addEventListener('click', () => {
+    const filtered = responses.filter(matchesFilter);
+    if (!filtered.length) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([toCsv(filtered)], { type: 'text/csv' }));
+    a.download = `banter-applications-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  async function loadResponses() {
+    const status = document.getElementById('responses-status');
+    status.textContent = 'Loading…';
+    // ponytail: loads every row and filters in memory. Fine at a few hundred
+    // applications per cycle; switch to .range() paging past ~2k rows.
+    const { data, error } = await sb.from('survey_responses').select('*').order('created_at', { ascending: false });
+    if (error) {
+      status.textContent = `Couldn't load applications: ${error.message}`;
+      return;
+    }
+    responses = data;
+    renderResponses();
+  }
+
+  function loadDashboard() {
+    loadCycleIntoEditor();
+    loadResponses();
+  }
+</script>
+</body>
+</html>

@@ -4,6 +4,9 @@
 <head>
 
   <!-- Global site tag (gtag.js) - Google Analytics -->
+  <!-- UA-177608645-1 is a Universal Analytics property; UA stopped processing
+       data in July 2023. Ask whether the alumni association wants a GA4
+       property before removing this, or leave it inert. -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-177608645-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -28,11 +31,6 @@
   <!--<link href="https://olinalumni.org/resources/banter/css/banterstyle.css" rel="stylesheet">-->
   <link href="../banter/css/banterstyle.css" rel="stylesheet">
 
-  <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-  <!--[if lt IE 9]>
-      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-
   <!-- Fav and touch icons -->
   <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/img/olin_logo_144.png">
   <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/img/olin_logo_114.png">
@@ -41,8 +39,6 @@
   <link rel="shortcut icon" href="/img/favicon.ico">
   <!-- Script Imports -->
   <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/riot/2.0.13/riot+compiler.min.js"></script>
-  <script src="tags/card-list.tag" type="riot/tag"></script>
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 </head>
 
@@ -108,175 +104,23 @@
       <div class="row">
         <div class="col-sm-12">
           <h2>Sign up timeline</h2>
-          <table class="fullWidth pure-table pure-table-bordered">
-            <thead>
-              <tr>
-                <th>Date (2025)</th>
-                <th>Mentee (Current Students) Deadlines</th>
-                <th>Mentee (Alumni 2022-2025) Deadlines</th>
-                <th>Mentor (Alumni 2006-2021) Deadlines</th>
-              </tr>
-            </thead>
-              <tr class='20250901-20250910'>
-            <tbody>
-                <!-- class names for the table rows are determined by start and end dates -->
-                <!-- if the current date is past the end date, then a JavaScript function at the end -->
-                <!-- will apply a 'past' CSS class to the row, which essentially applies strikethrough -->
-                <!-- I don't think start dates are very useful, so I modified the function at the end -->
-                <!-- to only check end dates, but I'm providing the start dates anyway out of laziness -->
-                <!-- The strikethroughs aren't rendering for me right now in any web browser except  -->
-                <!-- for when I directly preview the HTML using Chrome. I am not a web dev...going to -->
-                <!-- have to fix this in a later commit.-->
-                <td>September 10th</td>
-                <td><a href='https://forms.gle/4eN1ZUZsv8vCAatv8'>Current student survey</a></td>
-                <td><a href='https://forms.gle/csEbGcDFUseqhaBZA'>Alumni 2022-2025 survey</a></td>
-                <td><a href='https://forms.gle/7WS8uZzM5XEUuab59'>Mentor survey</a></td>
-              </tr>
-              <tr class='20250911-20250913'>
-                <td>September 13th</td>
-                <td>Mentor profiles public</td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr class='20250913-20250927'>
-                <td>September 27th</td>
-                <td><a href="https://forms.gle/WQz4JGT8i7vFJNSk7">Mentor selection deadline</a></td>
-                <td><a href="https://forms.gle/WQz4JGT8i7vFJNSk7">Mentor selection deadline</a></td>
-            
-                <td></td>
-              </tr>
-              <tr class='20250927-20250928'>
-                <td>September 28th</td>
-                <td>Match results emailed</td>
-                <td>Match results emailed</td>
-                <td>Match results emailed</td>
-              </tr>
-              <tr class='20250929-20251005'>
-                <td>October 5th</td>
-                <td>Deadline to schedule first meeting</td>
-                <td>Deadline to schedule first meeting</td>
-                <td></td>
-              </tr>
-              <tr class='20251008-20260601'>
-                <td>~Monthly through May 2026</td>
-                <td>30 minute video chat</td>
-                <td>30 minute video chat</td>
-                <td>30 minute video chat</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <!--I don't know why the two bottom tables exist. 
-            Maybe they serve as a backup in case the pure-table CSS doesn't merge them all together?
-            I'm commenting these tables out for this year, but they do have the correct dates and links 
-            for this year in case people report that they're erroring out. -->
-<!-- 
-
-  
-          <table class="mobileWidth pure-table pure-table-bordered">
-            <thead>
-              <tr>
-                <th>Date (2023)</th>
-                <th>Mentee (Students) Deadlines</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class='20230906-20230913'>
-                <td>September 13th</td>
-                <td><a href='https://forms.gle/JUkeg2BgtSdypTEW9'>Student survey deadline</a></td>
-
-            
-              </tr>
-              <tr class='20230913-20230916'>
-                <td>September 16th</td>
-                <td>Mentor profiles public</td>
-              </tr>
-              <tr class='20230916-20230923'>
-                <td>September 23rd</td>
-                <td><a href='https://forms.gle/F6wNF3rXdtXCKd3J7'>Mentor selection deadline</a></td>
-              </tr>
-              <tr class='20230923-20230924'>
-                <td>September 24th</td>
-                <td>Match results emailed</td>
-              </tr>
-              <tr class='20230924-20231001'>
-                <td>October 1st</td>
-                <td>Deadline to schedule first meeting</td>
-              </tr>
-              <tr class='20231001-20240601'>
-                <td>~Monthly through May 2024</td>
-                <td>30 minute video chat</td>
-              </tr>
-            </tbody>
-          </table>
-          <br />
-          <table class="mobileWidth pure-table pure-table-bordered">
-            <thead>
-              <tr>
-                <th>Date (2023)</th>
-                <th>Mentee (Alumni 2020-2023) Deadlines</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class='20230906-20230913'>
-                <td>September 13th</td>
-                <td><a href='https://forms.gle/jHVgccDULkcAFQ7p9'>Mentee (Alumni 2019-2022) survey deadline</a></td>
-              </tr>
-                                  
-              <tr class='20230913-20230916'>
-                <td>September 16th</td>
-                <td>Mentor profiles public</td>
-              </tr>
-              <tr class='20230916-20230923'>
-                <td>September 23rd</td>
-                <td><a href='https://forms.gle/F6wNF3rXdtXCKd3J7'>Mentor selection deadline</a></td>
-              </tr>
-              <tr class='20230923-20230924'>
-                <td>September 24th</td>
-                <td>Match results emailed</td>
-              </tr>
-              <tr class='20230924-20231001'>
-                <td>October 1st</td>
-                <td>Deadline to schedule first meeting</td>
-              </tr>
-              <tr class='20231001-20240601'>
-                <td>~Monthly through May 2024</td>
-                <td>30 minute video chat</td>
-              </tr>
-            </tbody>
-          </table>
-          <br />
-
-          <table class="mobileWidth pure-table pure-table-bordered">
-            <thead>
-              <tr>
-                <th>Date (2023)</th>
-                <th>Mentor (Alumni 2006-2019) Deadlines</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class='20230906-20230913'>
-                <td>September 13th</td>
-                <td><a href='https://forms.gle/M1gUne6JHhKaRArd9'>Mentor survey deadline</a></td>
-              </tr>
-              <tr class='20230913-20230924'>
-                <td>September 24th</td>
-                <td>Match results emailed</td>
-              </tr>
-
-              <tr class ='20230924-20231001'>
-                <td>October 1st</td>
-                <td>Deadline to schedule first meeting</td>
-              </tr>
-              <tr class='20231001-20240601'>
-                <td>~Monthly through May 2024</td>
-                <td>30 minute video chat</td>
-              </tr>
-            </tbody>
-          </table>
-          <br />
-
--->
+          <div class="table-responsive">
+            <table id="timeline" class="pure-table pure-table-bordered" aria-busy="true">
+              <caption class="sr-only">Banter sign-up deadlines</caption>
+              <thead>
+                <tr><th scope="col">Date</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Loading this year's dates&hellip;</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <script type="module">
+            import { loadCycle, renderTimeline, renderTimelineError } from '/resources/banter/js/banter.js';
+            const table = document.getElementById('timeline');
+            loadCycle().then((cycle) => renderTimeline(table, cycle))
+              .catch((err) => renderTimelineError(table, err));
+          </script>
         </div>
       </div>
     </div>
@@ -309,7 +153,7 @@
           <p>
           <h5>How long is the program? What is the time commitment?</h5>
           </p>
-          <p> You’ll be getting your match in October and we’ll be checking in with you until May 2024, but we hope you’ll
+          <p> You’ll be getting your match in October and we’ll be checking in with you through the end of the academic year, but we hope you’ll
             keep in touch after Banter officially ends for the year. Expect to set aside a half hour per month to meet or
             communicate with your match.</p>
           
@@ -336,44 +180,9 @@
           <p> This program is brought to you by: Lillian Tseng (‘13) and Sara Wheeland (‘07) </p>
           <p> Have additional questions for us? Feel free to contact us! </p>
 
-          <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <link rel="stylesheet"
-              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-            <style>
-              .fa {
-                padding: 10px;
-                font-size: 12px;
-                width: 35px;
-                text-align: center;
-                text-decoration: none;
-                margin: 2px 2px;
-              }
-
-              .fa:hover {
-                opacity: 0.7;
-              }
-
-              .fa-facebook {
-                background: #3B5998;
-                color: white;
-              }
-
-              .fa-envelope {
-                background: #55ACEE;
-                color: white;
-              }
-            </style>
-          </head>
-
-          <body>
-
-            <!-- Add font awesome icons -->
-            <a href="https://www.facebook.com/groups/olinbanter" class="fa fa-facebook"></a>
-            <a href="mailto:banter@olin.edu" class="fa fa-envelope"></a>
-
-
-          </body>
+          <!-- Add font awesome icons -->
+          <a href="https://www.facebook.com/groups/olinbanter" class="fa fa-facebook"></a>
+          <a href="mailto:banter@olin.edu" class="fa fa-envelope"></a>
 
         </div>
       </div>
@@ -393,76 +202,6 @@
     </div>
   </div>
 
-  <!-- Analytics -->
-  <script>(function (d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) return;
-      js = d.createElement(s); js.id = id;
-      js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=165643994230";
-      fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));</script>
-
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-37068470-1']);
-    _gaq.push(['_setDomainName', 'olinalumni.org']);
-    _gaq.push(['_trackPageview']);
-
-    (function () {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
-
-  <script>
-    function pad(d) {
-      var dd = d.toString();
-      if (dd.length == 1) {
-        return '0' + dd;
-      }
-      return dd;
-    }
-    function getIntDate() {
-      var d = new Date();
-      var day = pad(d.getDate());
-      var month = pad(d.getMonth() + 1);
-      var year = pad(d.getFullYear());
-      return parseInt(year + month + day);
-    }
-    function getStartDate(dd) {
-      var res = dd.split('-');
-      return parseInt(res[0]);
-    }
-    function getEndDate(dd) {
-      var res = dd.split('-');
-      return parseInt(res[1]);
-    }
-    var dd = getIntDate();
-    var all = document.getElementsByTagName("tr");
-
-    for (var i = 0; i < all.length; i++) {
-      var elm = all[i];
-      if (!elm.className) {
-        continue;
-      }
-      var startDate = getStartDate(elm.className);
-      var endDate = getEndDate(elm.className);
-      if (endDate < dd) {
-        eelms = document.getElementsByClassName(elm.className);
-        for (var j = 0; j < eelms.length; j++) {
-          eelms[j].classList.add('past');        }
-      }
-      //if (startDate < dd && endDate > dd) {
-        // commented out because I didn't see the value of checking the start date
-      if (endDate >dd){
-        eelms = document.getElementsByClassName(elm.className);
-        for (var j = 0; j < eelms.length; j++) {
-          eelms[j].classList.add('current');
-        }
-      }
-    }
-  </script>
 </body>
 
 </html>
