@@ -43,6 +43,15 @@
     .deck-row.approved { background: #eefbea; }
     [hidden] { display: none !important; }
     #filters { margin-top: 1rem; display: flex; gap: .75rem; flex-wrap: wrap; align-items: center; }
+    .deadline-groups { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1rem; }
+    .deadline-group { flex: 1 1 14rem; }
+    .deadline-group h4 { margin: 0 0 .5rem; font-size: 1rem; }
+    .deadline-fields { display: flex; gap: .75rem; }
+    .deadline-fields > div { flex: 1; }
+    #window-status { gap: 1.5rem; }
+    .window-item { padding: .6rem 1rem; border: 1px solid #cbcbcb; border-radius: .25rem; background: white; }
+    #window-status-message { min-height: 1.5rem; }
+    #download-decks-status, #download-matches-status { min-height: 1.5rem; }
   </style>
 </head>
 <body>
@@ -51,7 +60,7 @@
   <h1>Banter admin</h1>
 
   <section id="login-panel">
-    <p>Sign in with the email address the organizers registered for you. We'll email a link — no password.</p>
+    <p>Sign in with the email address the organizers gave you. We send a sign-in link by email. You do not need a password.</p>
     <form id="login-form">
       <label for="login-email">Email</label>
       <input id="login-email" type="email" required autocomplete="email">
@@ -62,8 +71,8 @@
 
   <section id="not-authorized" hidden>
     <p><strong>No admin privileges provisioned.</strong></p>
-    <p>Signed in as <strong id="not-authorized-email"></strong>. Email
-      <a href="mailto:banter@olin.edu">banter@olin.edu</a> if you think this is wrong.</p>
+    <p>You are signed in as <strong id="not-authorized-email"></strong>. If this looks wrong, email
+      <a href="mailto:banter@olin.edu">banter@olin.edu</a>.</p>
     <button id="sign-out-1" type="button" class="secondary">Sign out</button>
   </section>
 
@@ -72,8 +81,8 @@
       <button id="sign-out-2" type="button" class="secondary">Sign out</button></p>
 
     <h2>Sign-up timeline</h2>
-    <p>Edit the deadlines shown on the public Banter page. Dates use the browser's native date picker, so there's
-      no way to type in something that isn't a valid date.</p>
+    <p>Edit the deadlines shown on the public Banter page. Each date field uses your browser's date picker.
+      You cannot enter an invalid date.</p>
 
     <label for="cycle-year">Year (shown in the table header)</label>
     <input id="cycle-year" type="number" min="2000" max="2100">
@@ -85,20 +94,31 @@
     </div>
 
     <h3>Application windows</h3>
-    <p>Each role's own open/close dates for the <a href="/resources/banter/apply/">apply form</a>. Enforced on the
-      server, not just hidden in the browser — leave a field blank for no restriction on that side.
+    <p>Each role has its own open and close date for the <a href="/resources/banter/apply/">apply form</a>. The
+      server enforces these dates, not just the browser. Leave a field blank to remove that restriction.
       "Alumni mentor" also covers the general alumni mentor pool.</p>
-    <div class="row-inline">
-      <div><label for="dl-mentor_alums-open">Alumni mentor opens</label><input id="dl-mentor_alums-open" type="date"></div>
-      <div><label for="dl-mentor_alums-close">closes</label><input id="dl-mentor_alums-close" type="date"></div>
-    </div>
-    <div class="row-inline">
-      <div><label for="dl-students-open">Student mentee opens</label><input id="dl-students-open" type="date"></div>
-      <div><label for="dl-students-close">closes</label><input id="dl-students-close" type="date"></div>
-    </div>
-    <div class="row-inline">
-      <div><label for="dl-young_alums-open">Recent alumni mentee opens</label><input id="dl-young_alums-open" type="date"></div>
-      <div><label for="dl-young_alums-close">closes</label><input id="dl-young_alums-close" type="date"></div>
+    <div class="deadline-groups">
+      <div class="deadline-group">
+        <h4>Alumni mentor</h4>
+        <div class="deadline-fields">
+          <div><label for="dl-mentor_alums-open">Opens</label><input id="dl-mentor_alums-open" type="date"></div>
+          <div><label for="dl-mentor_alums-close">Closes</label><input id="dl-mentor_alums-close" type="date"></div>
+        </div>
+      </div>
+      <div class="deadline-group">
+        <h4>Student mentee</h4>
+        <div class="deadline-fields">
+          <div><label for="dl-students-open">Opens</label><input id="dl-students-open" type="date"></div>
+          <div><label for="dl-students-close">Closes</label><input id="dl-students-close" type="date"></div>
+        </div>
+      </div>
+      <div class="deadline-group">
+        <h4>Recent alumni mentee</h4>
+        <div class="deadline-fields">
+          <div><label for="dl-young_alums-open">Opens</label><input id="dl-young_alums-open" type="date"></div>
+          <div><label for="dl-young_alums-close">Closes</label><input id="dl-young_alums-close" type="date"></div>
+        </div>
+      </div>
     </div>
 
     <div class="table-responsive">
@@ -135,12 +155,13 @@
     </div>
 
     <h2>Mentor decks</h2>
-    <p>Generate profile decks after the mentor deadline closes, then review each one before it becomes visible
-      to mentees. Regenerating a deck resets its approval — a content change always gets re-reviewed. Approving
-      a cohort's decks for the first time also opens that cohort's own application window below — the two
-      mentee cohorts are independent, approving one never affects the other.</p>
+    <p>Generate profile decks after the mentor deadline closes. Review each deck before it becomes visible to
+      mentees. If you regenerate a deck, its approval resets, and it needs a new review. Approving a cohort's
+      decks for the first time also opens that cohort's application window below. The two mentee cohorts are
+      independent. Approving one does not affect the other.</p>
     <h3>Application windows</h3>
     <div id="window-status" class="row-inline"></div>
+    <p id="window-status-message" role="status" aria-live="polite"></p>
     <p class="row-inline">
       <button id="generate-decks" type="button">Generate mentor decks</button>
     </p>
@@ -157,13 +178,15 @@
     <p class="row-inline">
       <button id="download-all-decks" type="button" class="secondary">Download all decks</button>
     </p>
+    <p id="download-decks-status" role="status" aria-live="polite"></p>
 
     <h3>Import edited decks</h3>
-    <p>Found a mistake in a deck? Download it above, fix it in PowerPoint or Keynote, then select the corrected
-      file(s) here to replace them.</p>
-    <p><strong>Each file's name must exactly match the name of the deck you downloaded</strong> — files are
-      matched by filename only. A file that doesn't match an existing deck is skipped, not guessed at; new decks
-      only come from "Generate mentor decks" above. Importing a deck resets its approval, same as regenerating it.</p>
+    <p>If a deck has a mistake, download it above. Fix it in PowerPoint or Keynote. Select the corrected file
+      below to replace it.</p>
+    <p><strong>Each file name must exactly match the name of the deck you downloaded.</strong> The system
+      matches files by name only. If a file does not match an existing deck, the system skips it. New decks
+      come only from the Generate mentor decks button above. Importing a deck resets its approval, the same
+      as regenerating it.</p>
     <input id="import-decks-input" type="file" multiple
       accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
     <p class="row-inline">
@@ -173,8 +196,8 @@
     <ul id="import-results"></ul>
 
     <h2>Matches</h2>
-    <p>Run the algorithm, check the results below, download and edit them by hand if something needs fixing, then
-      approve when they're ready — approving is the only action that emails anyone.</p>
+    <p>Run the algorithm. Check the results below. If something needs fixing, download and edit the results by
+      hand. Approve the results when they are ready. Only the approve action sends emails.</p>
     <p class="row-inline">
       <button id="generate-matches" type="button" class="secondary">Generate matches</button>
     </p>
@@ -191,11 +214,12 @@
     <p class="row-inline">
       <button id="download-matches" type="button" class="secondary">Download matches (CSV)</button>
     </p>
+    <p id="download-matches-status" role="status" aria-live="polite"></p>
 
     <h3>Import edited matches</h3>
-    <p>Not happy with a pairing? Download the CSV above, edit it in a spreadsheet, then import it back here —
-      the file you import replaces every match currently in the table above. The whole file is checked first;
-      if anything's wrong nothing is changed and every problem is listed.</p>
+    <p>If a pairing is wrong, download the CSV above. Edit it in a spreadsheet. Import it back here. The
+      imported file replaces every match in the table above. The system checks the whole file first. If a
+      problem exists, the system changes nothing and lists every problem.</p>
     <input id="import-matches-input" type="file" accept=".csv,text/csv">
     <p class="row-inline">
       <button id="import-matches-btn" type="button">Import CSV</button>
@@ -206,8 +230,8 @@
     <p class="row-inline">
       <button id="approve-matches" type="button">Approve &amp; send emails</button>
     </p>
-    <p><small>This emails a match announcement to every pair currently in the table above — not a fresh
-      algorithm run, whatever you see there (including any manual corrections) is what gets sent.</small></p>
+    <p><small>This emails a match announcement to every pair in the table above. It does not run the algorithm
+      again. The system sends exactly what you see there, including any manual corrections.</small></p>
 
     <h2>Applications</h2>
     <div id="filters">
@@ -448,18 +472,48 @@
     const labels = { students: 'Current students', young_alums: 'Recent alumni' };
     for (const audience of ['students', 'young_alums']) {
       const d = cycle.deadlines?.[audience] || {};
+      const state = windowState(d);
       const div = document.createElement('div');
-      div.innerHTML = `<strong>${labels[audience]}:</strong> ${windowState(d)} `;
+      div.className = 'window-item';
+      div.innerHTML = `<strong>${labels[audience]}:</strong> ${state} `;
       if (d.open) {
+        const isClosed = state.startsWith('closed');
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'secondary';
-        btn.textContent = 'Close now';
-        btn.addEventListener('click', () => closeWindowNow(audience, labels[audience]));
+        btn.textContent = isClosed ? 'Open now' : 'Close now';
+        btn.addEventListener('click', () => (isClosed
+          ? openWindowNow(audience, labels[audience])
+          : closeWindowNow(audience, labels[audience])));
         div.appendChild(btn);
       }
       el.appendChild(div);
     }
+  }
+
+  // Reads, patches, and writes one audience's deadline object. Reports any
+  // error through #window-status-message instead of failing silently, and
+  // only reloads the editor when the write actually succeeds.
+  async function patchWindow(audience, patch) {
+    const status = document.getElementById('window-status-message');
+    const { data, error: readError } = await sb.from('site_config').select('value').eq('key', CYCLE_KEY).maybeSingle();
+    if (readError || !data) {
+      status.textContent = `Could not read the current settings: ${readError?.message || 'no config row found'}.`;
+      return false;
+    }
+    const cycle = data.value;
+    const updated = {
+      ...cycle,
+      deadlines: { ...cycle.deadlines, [audience]: { ...cycle.deadlines?.[audience], ...patch } },
+    };
+    const { error: writeError } = await sb.from('site_config')
+      .update({ value: updated, updated_at: new Date().toISOString() }).eq('key', CYCLE_KEY);
+    if (writeError) {
+      status.textContent = `Could not save: ${writeError.message}`;
+      return false;
+    }
+    status.textContent = '';
+    return true;
   }
 
   // Sets `open` to today, but only the first time -- a later regenerate +
@@ -469,29 +523,27 @@
   async function maybeAutoOpenWindow(audience) {
     if (audience !== 'students' && audience !== 'young_alums') return;
     const { data } = await sb.from('site_config').select('value').eq('key', CYCLE_KEY).maybeSingle();
-    if (!data) return;
-    const cycle = data.value;
-    if (cycle.deadlines?.[audience]?.open) return;
-    const updated = {
-      ...cycle,
-      deadlines: { ...cycle.deadlines, [audience]: { ...cycle.deadlines?.[audience], open: new Date().toISOString().slice(0, 10) } },
-    };
-    await sb.from('site_config').update({ value: updated, updated_at: new Date().toISOString() }).eq('key', CYCLE_KEY);
+    if (!data || data.value.deadlines?.[audience]?.open) return;
+    await patchWindow(audience, { open: new Date().toISOString().slice(0, 10) });
   }
 
   // Manual mistake-recovery escape hatch -- deliberately not wired to
   // anything automatic (not regenerate, not reapproval).
   async function closeWindowNow(audience, label) {
-    if (!confirm(`Close the ${label} application window right now? This is for correcting a genuine mistake.`)) return;
-    const { data } = await sb.from('site_config').select('value').eq('key', CYCLE_KEY).maybeSingle();
-    if (!data) return;
-    const cycle = data.value;
-    const updated = {
-      ...cycle,
-      deadlines: { ...cycle.deadlines, [audience]: { ...cycle.deadlines?.[audience], close: new Date().toISOString().slice(0, 10) } },
-    };
-    await sb.from('site_config').update({ value: updated, updated_at: new Date().toISOString() }).eq('key', CYCLE_KEY);
-    loadCycleIntoEditor();
+    if (!confirm(`Close the ${label} application window now? Use this only to correct a genuine mistake.`)) return;
+    // `close` is inclusive of that day everywhere else in this system (the
+    // client display, submit-response, mentor-decks), so "today" would not
+    // read as closed until tomorrow. Yesterday closes it immediately without
+    // changing that shared convention.
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    if (await patchWindow(audience, { close: yesterday })) loadCycleIntoEditor();
+  }
+
+  // Symmetric manual override: clears `close` entirely, matching the "blank
+  // field means no restriction" rule already used everywhere in this form.
+  async function openWindowNow(audience, label) {
+    if (!confirm(`Open the ${label} application window right now? Everyone can apply immediately.`)) return;
+    if (await patchWindow(audience, { close: undefined })) loadCycleIntoEditor();
   }
 
   // --- Applications list ------------------------------------------------
@@ -656,7 +708,7 @@
   }
 
   document.getElementById('download-all-decks').addEventListener('click', async () => {
-    const status = document.getElementById('decks-status');
+    const status = document.getElementById('download-decks-status');
     if (!decks.length) { status.textContent = 'No decks to download.'; return; }
     status.textContent = `Downloading ${decks.length} deck(s)…`;
     for (const d of decks) {
@@ -788,7 +840,8 @@
   }
 
   document.getElementById('download-matches').addEventListener('click', () => {
-    if (!matches.length) return;
+    const status = document.getElementById('download-matches-status');
+    if (!matches.length) { status.textContent = 'No matches to download.'; return; }
     const header = ['mentor_email', 'mentor_name', 'mentee_email', 'mentee_name', 'cohort', 'score'];
     const lines = [header, ...matches.map((m) => [
       matchPeople[m.mentor]?.email || '', matchPeople[m.mentor]?.name || '',
@@ -801,6 +854,7 @@
     a.download = `banter-matches-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(a.href);
+    status.textContent = `Downloaded ${matches.length} match(es).`;
   });
 
   // Minimal quote-aware CSV parser -- the export always quotes every field,
@@ -867,9 +921,9 @@
       const mentorMatches = byEmail.get(mentorEmail) || [];
       const menteeMatches = byEmail.get(menteeEmail) || [];
       if (!mentorMatches.length) errors.push(`Row ${line}: no application found for mentor email "${mentorEmail}".`);
-      else if (mentorMatches.length > 1) errors.push(`Row ${line}: mentor email "${mentorEmail}" has more than one application (different cohorts) — ambiguous.`);
+      else if (mentorMatches.length > 1) errors.push(`Row ${line}: mentor email "${mentorEmail}" matches applications in more than one cohort. The system cannot tell which one you mean.`);
       if (!menteeMatches.length) errors.push(`Row ${line}: no application found for mentee email "${menteeEmail}".`);
-      else if (menteeMatches.length > 1) errors.push(`Row ${line}: mentee email "${menteeEmail}" has more than one application (different cohorts) — ambiguous.`);
+      else if (menteeMatches.length > 1) errors.push(`Row ${line}: mentee email "${menteeEmail}" matches applications in more than one cohort. The system cannot tell which one you mean.`);
       if (!['students', 'young_alums'].includes(cohort)) errors.push(`Row ${line}: cohort must be students or young_alums, got "${cohort}".`);
       if (!Number.isFinite(score) || score < 0) errors.push(`Row ${line}: score "${r[col('score')]}" must be a number 0 or greater.`);
       if (menteeEmail && seenMentees.has(menteeEmail)) errors.push(`Row ${line}: mentee ${menteeEmail} appears more than once.`);
@@ -897,7 +951,7 @@
 
   document.getElementById('approve-matches').addEventListener('click', async () => {
     if (!matches.length) { document.getElementById('matching-pipeline-status').textContent = 'No matches to send.'; return; }
-    if (!confirm('This will email every matched pair currently in the table. Are you sure?')) return;
+    if (!confirm('This emails every matched pair in the table. Are you sure?')) return;
     const status = document.getElementById('matching-pipeline-status');
     status.textContent = 'Sending…';
     // Notify-only path: reads matches JOIN survey_responses and emails from
