@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Banter admin · Olin Alumni</title>
+  <link rel="shortcut icon" href="/img/favicon.ico">
+  <!--
+    This URL is public. Anyone can load it and read every line of this
+    source, and that is fine — nothing on this page is secret. The only
+    thing standing between a stranger and the applications table is RLS on
+    the server. If RLS is right, a guessable URL doesn't hurt; if it's
+    wrong, a secret URL doesn't help. Don't "fix" this by hiding the link.
+  -->
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #172d3b; background: #faf9f6; font: 1rem/1.5 system-ui, sans-serif; }
+    main { max-width: 64rem; margin: 2rem auto; padding: 0 1.25rem 3rem; }
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.5rem; }
+    a.back { display: inline-block; margin-bottom: 1rem; color: #174b66; }
+    label { display: block; font-weight: 600; margin-top: 1rem; }
+    input, select, button, textarea { font: inherit; padding: .5rem; border: 1px solid #71818a; border-radius: .25rem; }
+    button { background: #174b66; color: white; cursor: pointer; }
+    button.secondary { background: white; color: #174b66; }
+    button.remove { background: #a00; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+    th, td { border: 1px solid #cbcbcb; padding: .4rem .6rem; text-align: left; vertical-align: top; }
+    th { background: #e0e0e0; position: sticky; top: 0; z-index: 1; }
+    pre { white-space: pre-wrap; word-break: break-word; max-width: 36rem; margin: 0; }
+    .row-inline { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+    .row-inline input { flex: 1 1 8rem; }
+    #login-panel input[type=email] { width: 20rem; max-width: 100%; }
+    #not-authorized { background: #fff3e0; border: 1px solid #d98c00; border-radius: .25rem; padding: 1rem; }
+    #save-status, #login-status, #decks-status, #decks-pipeline-status, #matches-status, #matching-pipeline-status { min-height: 1.5rem; }
+    #save-status.error { color: #a00; font-weight: 600; }
+    .table-responsive { overflow-x: auto; cursor: grab; scrollbar-width: thin; }
+    .table-responsive:active { cursor: grabbing; }
+    .table-responsive::-webkit-scrollbar { height: 10px; }
+    .table-responsive::-webkit-scrollbar-thumb { background: #b7c0c4; border-radius: 5px; }
+    .table-responsive.responses-scroll { max-height: 26rem; overflow-y: auto; }
+    .deck-row.pending { background: #fff8e1; }
+    .deck-row.approved { background: #eefbea; }
+    [hidden] { display: none !important; }
+    #filters { margin-top: 1rem; display: flex; gap: .75rem; flex-wrap: wrap; align-items: center; }
+    .deadline-groups { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1rem; }
+    .deadline-group { flex: 1 1 14rem; }
+    .deadline-group h4 { margin: 0 0 .5rem; font-size: 1rem; }
+    .deadline-fields { display: flex; gap: .75rem; }
+    .deadline-fields > div { flex: 1; }
+    #window-status { gap: 1.5rem; }
+    .window-item { padding: .6rem 1rem; border: 1px solid #cbcbcb; border-radius: .25rem; background: white; }
+    #window-status-message { min-height: 1.5rem; }
+    #download-decks-status, #download-matches-status { min-height: 1.5rem; }
+  </style>
+</head>
+<body>
+<main>
+  <a class="back" href="/resources/banter/">&larr; Back to Banter</a>
+  <h1>Banter admin</h1>
+
+  <section id="login-panel">
+    <p>Sign in with the email address the organizers gave you. We send a sign-in link by email. You do not need a password.</p>
+    <form id="login-form">
+      <label for="login-email">Email</label>
+      <input id="login-email" type="email" required autocomplete="email">
+      <button type="submit">Send magic link</button>
+    </form>
+    <p id="login-status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section id="not-authorized" hidden>
+    <p><strong>No admin privileges provisioned.</strong></p>
+    <p>You are signed in as <strong id="not-authorized-email"></strong>. If this looks wrong, email
+      <a href="mailto:banter@olin.edu">banter@olin.edu</a>.</p>
+    <button id="sign-out-1" type="button" class="secondary">Sign out</button>
+  </section>
+
+  <section id="dashboard" hidden>
+    <p class="row-inline">Signed in as <strong id="admin-email"></strong>
+      <button id="sign-out-2" type="button" class="secondary">Sign out</button></p>
+
+    <h2>Sign-up timeline</h2>
+    <p>Edit the deadlines shown on the public Banter page. Each date field uses your browser's date picker.
+      You cannot enter an invalid date.</p>
+
+    <label for="cycle-year">Year (shown in the table header)</label>
+    <input id="cycle-year" type="number" min="2000" max="2100">
+
+    <div class="row-inline" style="margin-top:1rem">
+      <div><label for="col-0">Column 1 header</label><input id="col-0" type="text"></div>
+      <div><label for="col-1">Column 2 header</label><input id="col-1" type="text"></div>
+      <div><label for="col-2">Column 3 header</label><input id="col-2" type="text"></div>
+    </div>
+
+    <h3>Application windows</h3>
+    <p>Each role has its own open and close date for the <a href="/resources/banter/apply/">apply form</a>. The
+      server enforces these dates, not just the browser. Leave a field blank to remove that restriction.
+      "Alumni mentor" also covers the general alumni mentor pool.</p>
+    <div class="deadline-groups">
+      <div class="deadline-group">
+        <h4>Alumni mentor</h4>
+        <div class="deadline-fields">
+          <div><label for="dl-mentor_alums-open">Opens</label><input id="dl-mentor_alums-open" type="date"></div>
+          <div><label for="dl-mentor_alums-close">Closes</label><input id="dl-mentor_alums-close" type="date"></div>
+        </div>
+      </div>
+      <div class="deadline-group">
+        <h4>Student mentee</h4>
+        <div class="deadline-fields">
+          <div><label for="dl-students-open">Opens</label><input id="dl-students-open" type="date"></div>
+          <div><label for="dl-students-close">Closes</label><input id="dl-students-close" type="date"></div>
+        </div>
+      </div>
+      <div class="deadline-group">
+        <h4>Recent alumni mentee</h4>
+        <div class="deadline-fields">
+          <div><label for="dl-young_alums-open">Opens</label><input id="dl-young_alums-open" type="date"></div>
+          <div><label for="dl-young_alums-close">Closes</label><input id="dl-young_alums-close" type="date"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table id="editor-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Display override</th>
+            <th>Column 1</th>
+            <th>Column 2</th>
+            <th>Column 3</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="editor-rows"></tbody>
+      </table>
+    </div>
+    <p><button id="add-row" type="button" class="secondary">Add milestone</button></p>
+
+    <p class="row-inline">
+      <button id="save-cycle" type="button">Save</button>
+      <button id="preview-cycle" type="button" class="secondary">Preview</button>
+    </p>
+    <p id="save-status" role="status" aria-live="polite"></p>
+
+    <div id="preview-wrap" hidden>
+      <h3>Preview</h3>
+      <div class="table-responsive">
+        <table id="preview-table" class="pure-table pure-table-bordered">
+          <thead><tr><th>Date</th></tr></thead>
+          <tbody><tr><td>—</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <h2>Mentor decks</h2>
+    <p>Generate profile decks after the mentor deadline closes. Review each deck before it becomes visible to
+      mentees. If you regenerate a deck, its approval resets, and it needs a new review. Approving a cohort's
+      decks for the first time also opens that cohort's application window below. The two mentee cohorts are
+      independent. Approving one does not affect the other.</p>
+    <h3>Application windows</h3>
+    <div id="window-status" class="row-inline"></div>
+    <p id="window-status-message" role="status" aria-live="polite"></p>
+    <p class="row-inline">
+      <button id="generate-decks" type="button">Generate mentor decks</button>
+    </p>
+    <p id="decks-pipeline-status" role="status" aria-live="polite"></p>
+    <p id="decks-status" role="status" aria-live="polite"></p>
+    <div class="table-responsive">
+      <table id="decks-table">
+        <thead>
+          <tr><th>Deck</th><th>Cohort</th><th>Audience</th><th>Generated</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="row-inline">
+      <button id="download-all-decks" type="button" class="secondary">Download all decks</button>
+    </p>
+    <p id="download-decks-status" role="status" aria-live="polite"></p>
+
+    <h3>Import edited decks</h3>
+    <p>If a deck has a mistake, download it above. Fix it in PowerPoint or Keynote. Select the corrected file
+      below to replace it.</p>
+    <p><strong>Each file name must exactly match the name of the deck you downloaded.</strong> The system
+      matches files by name only. If a file does not match an existing deck, the system skips it. New decks
+      come only from the Generate mentor decks button above. Importing a deck resets its approval, the same
+      as regenerating it.</p>
+    <input id="import-decks-input" type="file" multiple
+      accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
+    <p class="row-inline">
+      <button id="import-decks-btn" type="button">Import selected files</button>
+    </p>
+    <p id="import-status" role="status" aria-live="polite"></p>
+    <ul id="import-results"></ul>
+
+    <h2>Matches</h2>
+    <p>Run the algorithm. Check the results below. If something needs fixing, download and edit the results by
+      hand. Approve the results when they are ready. Only the approve action sends emails.</p>
+    <p class="row-inline">
+      <button id="generate-matches" type="button" class="secondary">Generate matches</button>
+    </p>
+    <p id="matching-pipeline-status" role="status" aria-live="polite"></p>
+    <p id="matches-status" role="status" aria-live="polite"></p>
+    <div class="table-responsive">
+      <table id="matches-table">
+        <thead>
+          <tr><th>Mentor</th><th>Mentee</th><th>Cohort</th><th>Score</th><th>Matched</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="row-inline">
+      <button id="download-matches" type="button" class="secondary">Download matches (CSV)</button>
+    </p>
+    <p id="download-matches-status" role="status" aria-live="polite"></p>
+
+    <h3>Import edited matches</h3>
+    <p>If a pairing is wrong, download the CSV above. Edit it in a spreadsheet. Import it back here. The
+      imported file replaces every match in the table above. The system checks the whole file first. If a
+      problem exists, the system changes nothing and lists every problem.</p>
+    <input id="import-matches-input" type="file" accept=".csv,text/csv">
+    <p class="row-inline">
+      <button id="import-matches-btn" type="button">Import CSV</button>
+    </p>
+    <p id="matches-import-status" role="status" aria-live="polite"></p>
+    <ul id="matches-import-results"></ul>
+
+    <p class="row-inline">
+      <button id="approve-matches" type="button">Approve &amp; send emails</button>
+    </p>
+    <p><small>This emails a match announcement to every pair in the table above. It does not run the algorithm
+      again. The system sends exactly what you see there, including any manual corrections.</small></p>
+
+    <h2>Applications</h2>
+    <div id="filters">
+      <label style="margin:0" for="filter-cohort">Cohort</label>
+      <select id="filter-cohort">
+        <option value="">All</option>
+        <option value="students">Current students</option>
+        <option value="young_alums">Recent alumni (mentee)</option>
+        <option value="mentor_alums">Alumni mentors</option>
+        <option value="alumni">Alumni (mentor pool)</option>
+      </select>
+      <label style="margin:0" for="filter-text">Search</label>
+      <input id="filter-text" type="search" placeholder="name, email, major…">
+      <button id="export-csv" type="button" class="secondary">Export CSV</button>
+    </div>
+    <p id="responses-status" role="status" aria-live="polite"></p>
+    <div class="table-responsive responses-scroll">
+      <table id="responses-table">
+        <thead>
+          <tr>
+            <th>Name</th><th>Email</th><th>Cohort</th><th>Grad year</th><th>Major</th><th>Time zone</th><th>Submitted</th><th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
+  import { SUPABASE_URL, ANON_KEY, renderTimeline, SAFE_HREF } from '/resources/banter/js/banter.js';
+
+  const sb = createClient(SUPABASE_URL, ANON_KEY);
+  const CYCLE_KEY = 'banter_cycle';
+
+  const loginPanel = document.getElementById('login-panel');
+  const notAuthorized = document.getElementById('not-authorized');
+  const dashboard = document.getElementById('dashboard');
+
+  // --- Auth ---------------------------------------------------------------
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const status = document.getElementById('login-status');
+    status.textContent = 'Sending…';
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: location.origin + location.pathname,
+        shouldCreateUser: false,
+      },
+    });
+    status.textContent = error
+      ? `Couldn't send a link: ${error.message}`
+      : `Check ${email} for a sign-in link.`;
+  });
+
+  for (const id of ['sign-out-1', 'sign-out-2']) {
+    document.getElementById(id).addEventListener('click', () => sb.auth.signOut());
+  }
+
+  function render(session) {
+    loginPanel.hidden = !!session;
+    if (!session) {
+      notAuthorized.hidden = true;
+      dashboard.hidden = true;
+      return;
+    }
+    const isAdmin = session.user.app_metadata?.role === 'admin';
+    notAuthorized.hidden = isAdmin;
+    dashboard.hidden = !isAdmin;
+    if (!isAdmin) {
+      document.getElementById('not-authorized-email').textContent = session.user.email;
+      return;
+    }
+    document.getElementById('admin-email').textContent = session.user.email;
+    loadDashboard();
+  }
+
+  sb.auth.getSession().then(({ data: { session } }) => render(session));
+  sb.auth.onAuthStateChange((event, session) => {
+    // TOKEN_REFRESHED fires silently in the background while a tab stays
+    // open. render() -> loadDashboard() -> loadCycleIntoEditor() wipes and
+    // repopulates the deadline editor's rows, discarding unsaved edits.
+    // Only react to events that actually change who is signed in.
+    if (event === 'TOKEN_REFRESHED') return;
+    render(session);
+  });
+
+  // --- Deadline editor ------------------------------------------------------
+
+  const editorRows = document.getElementById('editor-rows');
+
+  function addRow(m = {}) {
+    const cells = m.cells || [{}, {}, {}];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="date" class="m-date" value="${String(m.date || '').replace(/"/g, '&quot;')}"></td>
+      <td><input type="text" class="m-display" value="${(m.display || '').replace(/"/g, '&quot;')}" placeholder="e.g. ~Monthly through May"></td>
+      ${[0, 1, 2].map((i) => `
+        <td>
+          <input type="text" class="m-label" data-col="${i}" value="${(cells[i]?.label || '').replace(/"/g, '&quot;')}" placeholder="label">
+          <input type="url" class="m-href" data-col="${i}" value="${(cells[i]?.href || '').replace(/"/g, '&quot;')}" placeholder="optional link">
+        </td>`).join('')}
+      <td><button type="button" class="remove">Remove</button></td>
+    `;
+    tr.querySelector('.remove').addEventListener('click', () => tr.remove());
+    editorRows.appendChild(tr);
+  }
+
+  document.getElementById('add-row').addEventListener('click', () => addRow());
+
+  const DEADLINE_ROLES = ['mentor_alums', 'students', 'young_alums'];
+
+  function readDeadlines() {
+    const deadlines = {};
+    for (const role of DEADLINE_ROLES) {
+      const open = document.getElementById(`dl-${role}-open`).value;
+      const close = document.getElementById(`dl-${role}-close`).value;
+      const d = {};
+      if (open) d.open = open;
+      if (close) d.close = close;
+      if (Object.keys(d).length) deadlines[role] = d;
+    }
+    // "alumni" is the general mentor pool, not a role exposed in the apply
+    // form's own selector — it shares the alumni-mentor window rather than
+    // needing its own pair of inputs here.
+    if (deadlines.mentor_alums) deadlines.alumni = deadlines.mentor_alums;
+    return deadlines;
+  }
+
+  function readCycleForm() {
+    const columns = [0, 1, 2].map((i) => document.getElementById(`col-${i}`).value.trim());
+    const milestones = [...editorRows.querySelectorAll('tr')].map((tr) => ({
+      date: tr.querySelector('.m-date').value,
+      display: tr.querySelector('.m-display').value.trim() || undefined,
+      cells: [0, 1, 2].map((i) => {
+        const label = tr.querySelector(`.m-label[data-col="${i}"]`).value.trim();
+        const href = tr.querySelector(`.m-href[data-col="${i}"]`).value.trim();
+        if (!label) return {};
+        return href ? { label, href } : { label };
+      }),
+    }));
+    return {
+      year: Number(document.getElementById('cycle-year').value),
+      columns,
+      deadlines: readDeadlines(),
+      milestones: milestones.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999')),
+    };
+  }
+
+  function validateCycle(cycle) {
+    if (!cycle.milestones.length) return 'Add at least one milestone.';
+    for (let i = 0; i < cycle.milestones.length; i++) {
+      const m = cycle.milestones[i];
+      if (!m.date) return `Row ${i + 1}: pick a date.`;
+      for (const cell of m.cells) {
+        if (cell.href && !SAFE_HREF.test(cell.href)) {
+          return `Row ${i + 1}: that link doesn't look like a valid URL.`;
+        }
+      }
+    }
+    for (const role of DEADLINE_ROLES) {
+      const d = cycle.deadlines[role];
+      if (d?.open && d?.close && d.open > d.close) {
+        return `${role.replace('_', ' ')} application window: opens after it closes.`;
+      }
+    }
+    return null;
+  }
+
+  document.getElementById('save-cycle').addEventListener('click', async () => {
+    const status = document.getElementById('save-status');
+    const cycle = readCycleForm();
+    const problem = validateCycle(cycle);
+    if (problem) {
+      status.textContent = problem;
+      status.classList.add('error');
+      return;
+    }
+    status.classList.remove('error');
+    status.textContent = 'Saving…';
+    const { error } = await sb.from('site_config')
+      .update({ value: cycle, updated_at: new Date().toISOString() })
+      .eq('key', CYCLE_KEY);
+    if (error) {
+      status.textContent = `Couldn't save: ${error.message}`;
+      status.classList.add('error');
+      return;
+    }
+    status.textContent = `Saved at ${new Date().toLocaleTimeString()}.`;
+  });
+
+  document.getElementById('preview-cycle').addEventListener('click', () => {
+    const cycle = readCycleForm();
+    const problem = validateCycle(cycle);
+    const wrap = document.getElementById('preview-wrap');
+    const status = document.getElementById('save-status');
+    if (problem) {
+      status.textContent = problem;
+      status.classList.add('error');
+      wrap.hidden = true;
+      return;
+    }
+    renderTimeline(document.getElementById('preview-table'), cycle);
+    wrap.hidden = false;
+  });
+
+  async function loadCycleIntoEditor() {
+    const { data, error } = await sb.from('site_config').select('value').eq('key', CYCLE_KEY).maybeSingle();
+    const status = document.getElementById('save-status');
+    if (error || !data) {
+      status.textContent = `Couldn't load the current timeline: ${error?.message || 'no config row found'}.`;
+      status.classList.add('error');
+      return;
+    }
+    const cycle = data.value;
+    document.getElementById('cycle-year').value = cycle.year || '';
+    [0, 1, 2].forEach((i) => { document.getElementById(`col-${i}`).value = cycle.columns?.[i] || ''; });
+    for (const role of DEADLINE_ROLES) {
+      document.getElementById(`dl-${role}-open`).value = cycle.deadlines?.[role]?.open || '';
+      document.getElementById(`dl-${role}-close`).value = cycle.deadlines?.[role]?.close || '';
+    }
+    editorRows.innerHTML = '';
+    (cycle.milestones || []).forEach((m) => addRow(m));
+    if (!cycle.milestones?.length) addRow();
+    renderWindowStatus(cycle);
+  }
+
+  // --- Mentee application windows, opened by deck approval, not a date ------
+
+  function windowState(d) {
+    if (!d?.open) return 'not yet open';
+    const today = new Date().toISOString().slice(0, 10);
+    if (d.close && today > d.close) return `closed ${d.close}`;
+    return `open since ${d.open}`;
+  }
+
+  function renderWindowStatus(cycle) {
+    const el = document.getElementById('window-status');
+    el.innerHTML = '';
+    const labels = { students: 'Current students', young_alums: 'Recent alumni' };
+    for (const audience of ['students', 'young_alums']) {
+      const d = cycle.deadlines?.[audience] || {};
+      const state = windowState(d);
+      const div = document.createElement('div');
+      div.className = 'window-item';
+      div.innerHTML = `<strong>${labels[audience]}:</strong> ${state} `;
+      if (d.open) {
+        const isClosed = state.startsWith('closed');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'secondary';
+        btn.textContent = isClosed ? 'Open now' : 'Close now';
+        btn.addEventListener('click', () => (isClosed
+          ? openWindowNow(audience, labels[audience])
+          : closeWindowNow(audience, labels[audience])));
+        div.appendChild(btn);
+      }
+      el.appendChild(div);
+    }
+  }
+
+  // Reads, patches, and writes one audience's deadline object. Reports any
+  // error through #window-status-message instead of failing silently, and
+  // only reloads the editor when the write actually succeeds.
+  async function patchWindow(audience, patch) {
+    const status = document.getElementById('window-status-message');
+    const { data, error: readError } = await sb.from('site_config').select('value').eq('key', CYCLE_KEY).maybeSingle();
+    if (readError || !data) {
+      status.textContent = `Could not read the current settings: ${readError?.message || 'no config row found'}.`;
+      return false;
+    }
+    const cycle = data.value;
+    const updated = {
+      ...cycle,
+      deadlines: { ...cycle.deadlines, [audience]: { ...cycle.deadlines?.[audience], ...patch } },
+    };
+    const { error: writeError } = await sb.from('site_config')
+      .update({ value: updated, updated_at: new Date().toISOString() }).eq('key', CYCLE_KEY);
+    if (writeError) {
+      status.textContent = `Could not save: ${writeError.message}`;
+      return false;
+    }
+    status.textContent = '';
+    return true;
+  }
+
+  // Sets `open` to today, but only the first time -- a later regenerate +
+  // reapprove of the same audience's decks must not reopen or reset it.
+  // Presence of `open` is the "already happened once" signal, no separate
+  // tracking flag needed.
+  async function maybeAutoOpenWindow(audience) {
+    if (audience !== 'students' && audience !== 'young_alums') return;
+    const { data } = await sb.from('site_config').select('value').eq('key', CYCLE_KEY).maybeSingle();
+    if (!data || data.value.deadlines?.[audience]?.open) return;
+    await patchWindow(audience, { open: new Date().toISOString().slice(0, 10) });
+  }
+
+  // Manual mistake-recovery escape hatch -- deliberately not wired to
+  // anything automatic (not regenerate, not reapproval).
+  async function closeWindowNow(audience, label) {
+    if (!confirm(`Close the ${label} application window now? Use this only to correct a genuine mistake.`)) return;
+    // `close` is inclusive of that day everywhere else in this system (the
+    // client display, submit-response, mentor-decks), so "today" would not
+    // read as closed until tomorrow. Yesterday closes it immediately without
+    // changing that shared convention.
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    if (await patchWindow(audience, { close: yesterday })) loadCycleIntoEditor();
+  }
+
+  // Symmetric manual override: clears `close` entirely, matching the "blank
+  // field means no restriction" rule already used everywhere in this form.
+  async function openWindowNow(audience, label) {
+    if (!confirm(`Open the ${label} application window right now? Everyone can apply immediately.`)) return;
+    if (await patchWindow(audience, { close: undefined })) loadCycleIntoEditor();
+  }
+
+  // --- Applications list ------------------------------------------------
+
+  let responses = [];
+
+  function matchesFilter(r) {
+    const cohort = document.getElementById('filter-cohort').value;
+    const text = document.getElementById('filter-text').value.trim().toLowerCase();
+    if (cohort && r.cohort !== cohort) return false;
+    if (!text) return true;
+    return [r.name, r.email, r.major].some((v) => (v || '').toLowerCase().includes(text));
+  }
+
+  function renderResponses() {
+    const filtered = responses.filter(matchesFilter);
+    const tbody = document.querySelector('#responses-table tbody');
+    tbody.innerHTML = '';
+    for (const r of filtered) {
+      const tr = document.createElement('tr');
+      const cells = [r.name, r.email, r.cohort, r.grad_year, r.major, r.timezone,
+        r.created_at ? new Date(r.created_at).toLocaleDateString() : ''];
+      for (const c of cells) {
+        const td = document.createElement('td');
+        td.textContent = c || '';
+        tr.appendChild(td);
+      }
+      const detailsTd = document.createElement('td');
+      const details = document.createElement('details');
+      const summary = document.createElement('summary');
+      summary.textContent = 'Full response';
+      const pre = document.createElement('pre');
+      pre.textContent = JSON.stringify(r.raw, null, 2);
+      details.append(summary, pre);
+      detailsTd.appendChild(details);
+      tr.appendChild(detailsTd);
+      tbody.appendChild(tr);
+    }
+    document.getElementById('responses-status').textContent =
+      `${filtered.length} of ${responses.length} application${responses.length === 1 ? '' : 's'}.`;
+    return filtered;
+  }
+
+  document.getElementById('filter-cohort').addEventListener('change', renderResponses);
+  document.getElementById('filter-text').addEventListener('input', renderResponses);
+
+  // Shared by the applications and matches CSV exports below.
+  function csvEscape(v) {
+    let s = v == null ? '' : String(v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // formula-injection guard for Excel/Sheets
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+
+  function toCsvString(lines) {
+    return '﻿' + lines.map((r) => r.map(csvEscape).join(',')).join('\r\n'); // BOM: Excel reads UTF-8
+  }
+
+  function toCsv(rows) {
+    const base = ['cohort', 'name', 'email', 'grad_year', 'major', 'timezone', 'created_at'];
+    const rawKeys = [...new Set(rows.flatMap((r) => Object.keys(r.raw || {})))];
+    const cols = [...base, ...rawKeys];
+    const lines = [cols, ...rows.map((r) => cols.map((c) => (base.includes(c) ? r[c] : (r.raw || {})[c])))];
+    return toCsvString(lines);
+  }
+
+  document.getElementById('export-csv').addEventListener('click', () => {
+    const filtered = responses.filter(matchesFilter);
+    if (!filtered.length) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([toCsv(filtered)], { type: 'text/csv' }));
+    a.download = `banter-applications-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  async function loadResponses() {
+    const status = document.getElementById('responses-status');
+    status.textContent = 'Loading…';
+    // ponytail: loads every row and filters in memory. Fine at a few hundred
+    // applications per cycle; switch to .range() paging past ~2k rows.
+    const { data, error } = await sb.from('survey_responses').select('*').order('created_at', { ascending: false });
+    if (error) {
+      status.textContent = `Couldn't load applications: ${error.message}`;
+      return;
+    }
+    responses = data;
+    renderResponses();
+  }
+
+  // --- Pipeline dispatch (GitHub Actions, proxied through dispatch-workflow) -
+
+  async function dispatchWorkflow(workflow, send_emails) {
+    const { data: { session } } = await sb.auth.getSession();
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/dispatch-workflow`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workflow, send_emails }),
+      });
+      const body = await res.json().catch(() => ({}));
+      return { ok: res.ok, body };
+    } catch (err) {
+      return { ok: false, body: { error: String(err) } };
+    }
+  }
+
+  // --- Mentor decks -----------------------------------------------------
+
+  let decks = [];
+
+  async function loadDecks() {
+    const status = document.getElementById('decks-status');
+    status.textContent = 'Loading…';
+    const { data, error } = await sb.from('deck_publications').select('*').order('generated_at', { ascending: false });
+    if (error) { status.textContent = `Couldn't load decks: ${error.message}`; return; }
+    decks = data;
+    renderDecks();
+  }
+
+  function renderDecks() {
+    const tbody = document.querySelector('#decks-table tbody');
+    tbody.innerHTML = '';
+    for (const d of decks) {
+      const tr = document.createElement('tr');
+      tr.className = d.approved ? 'deck-row approved' : 'deck-row pending';
+      const cells = [
+        d.display_name || d.object_path, d.cohort, d.audience,
+        d.generated_at ? new Date(d.generated_at).toLocaleString() : '',
+        d.approved ? `Approved ${d.approved_at ? new Date(d.approved_at).toLocaleDateString() : ''}` : 'Pending review',
+      ];
+      for (const c of cells) {
+        const td = document.createElement('td');
+        td.textContent = c || '';
+        tr.appendChild(td);
+      }
+      const actionTd = document.createElement('td');
+      const previewBtn = document.createElement('button');
+      previewBtn.type = 'button';
+      previewBtn.className = 'secondary';
+      previewBtn.textContent = 'Preview';
+      previewBtn.addEventListener('click', async () => {
+        const { data: signed, error } = await sb.storage.from('banter-decks').createSignedUrl(d.object_path, 300);
+        if (error) { alert(`Couldn't open preview: ${error.message}`); return; }
+        window.open(signed.signedUrl, '_blank');
+      });
+      actionTd.appendChild(previewBtn);
+      if (!d.approved) {
+        const approveBtn = document.createElement('button');
+        approveBtn.type = 'button';
+        approveBtn.textContent = 'Approve';
+        approveBtn.style.marginLeft = '.5rem';
+        approveBtn.addEventListener('click', async () => {
+          const { error } = await sb.from('deck_publications')
+            .update({ approved: true, approved_at: new Date().toISOString() })
+            .eq('id', d.id);
+          if (error) { alert(`Couldn't approve: ${error.message}`); return; }
+          await maybeAutoOpenWindow(d.audience);
+          loadDecks();
+          loadCycleIntoEditor();
+        });
+        actionTd.appendChild(approveBtn);
+      }
+      tr.appendChild(actionTd);
+      tbody.appendChild(tr);
+    }
+    document.getElementById('decks-status').textContent =
+      `${decks.length} deck${decks.length === 1 ? '' : 's'}, ${decks.filter((d) => !d.approved).length} pending review.`;
+  }
+
+  document.getElementById('download-all-decks').addEventListener('click', async () => {
+    const status = document.getElementById('download-decks-status');
+    if (!decks.length) { status.textContent = 'No decks to download.'; return; }
+    status.textContent = `Downloading ${decks.length} deck(s)…`;
+    for (const d of decks) {
+      const { data: signed, error } = await sb.storage.from('banter-decks').createSignedUrl(d.object_path, 300);
+      if (error) continue;
+      const a = document.createElement('a');
+      a.href = signed.signedUrl;
+      a.download = d.object_path.split('/').pop();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // Browsers throttle/drop near-simultaneous downloads from one click.
+      await new Promise((r) => setTimeout(r, 400));
+    }
+    status.textContent = `Started ${decks.length} download(s).`;
+  });
+
+  document.getElementById('import-decks-btn').addEventListener('click', async () => {
+    const input = document.getElementById('import-decks-input');
+    const files = [...input.files];
+    const status = document.getElementById('import-status');
+    const results = document.getElementById('import-results');
+    results.innerHTML = '';
+    if (!files.length) { status.textContent = 'Choose one or more .pptx files first.'; return; }
+    status.textContent = `Importing ${files.length} file(s)…`;
+
+    // Match by the trailing filename, not the full storage path -- that's
+    // all a browser download preserves, and admins never see or edit the
+    // cohort-prefixed object_path itself.
+    const byName = new Map(decks.map((d) => [d.object_path.split('/').pop(), d]));
+
+    let replaced = 0, skipped = 0;
+    for (const file of files) {
+      const li = document.createElement('li');
+      const match = byName.get(file.name);
+      if (!match) {
+        li.textContent = `${file.name}: no matching deck, skipped.`;
+        skipped++;
+        results.appendChild(li);
+        continue;
+      }
+      // Reset the review flag BEFORE uploading the new file, not after. If
+      // this write fails, the old, still-approved file in storage is
+      // untouched -- the safe failure direction. Uploading first and
+      // resetting after risks the opposite: new, unreviewed content left
+      // marked approved and publicly visible if the second request fails.
+      const { error: dbError } = await sb.from('deck_publications')
+        .update({ approved: false, approved_at: null, generated_at: new Date().toISOString() })
+        .eq('id', match.id);
+      if (dbError) {
+        li.textContent = `${file.name}: couldn't start the import (${dbError.message}). Nothing was changed.`;
+        results.appendChild(li);
+        continue;
+      }
+      const { error: uploadError } = await sb.storage.from('banter-decks')
+        .update(match.object_path, file, {
+          upsert: true,
+          contentType: file.type || 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        });
+      if (uploadError) {
+        li.textContent = `${file.name}: marked for review, but the file upload failed (${uploadError.message}). Try importing again.`;
+        results.appendChild(li);
+        continue;
+      }
+      li.textContent = `${file.name}: replaced ${match.object_path}, needs re-approval.`;
+      results.appendChild(li);
+      replaced++;
+    }
+    status.textContent = `${replaced} replaced, ${skipped} skipped.`;
+    input.value = '';
+    loadDecks();
+  });
+
+  document.getElementById('generate-decks').addEventListener('click', async () => {
+    const status = document.getElementById('decks-pipeline-status');
+    status.textContent = 'Starting…';
+    const { ok, body } = await dispatchWorkflow('generate-mentor-decks.yml');
+    status.textContent = ok
+      ? 'Started. Refresh in a few minutes to see new decks below.'
+      : `Couldn't start: ${body.error || 'unknown error'}`;
+  });
+
+  // --- Matches ------------------------------------------------------------
+
+  let matches = [];
+  let matchPeople = {}; // survey_responses id -> {name, email}
+
+  async function loadMatches() {
+    const status = document.getElementById('matches-status');
+    status.textContent = 'Loading…';
+    const { data: matchRows, error } = await sb.from('matches').select('*').order('created_at', { ascending: false });
+    if (error) { status.textContent = `Couldn't load matches: ${error.message}`; return; }
+    const ids = [...new Set(matchRows.flatMap((m) => [m.mentor, m.mentee]))];
+    const { data: people } = ids.length
+      ? await sb.from('survey_responses').select('id,name,email').in('id', ids)
+      : { data: [] };
+    matches = matchRows;
+    matchPeople = Object.fromEntries((people || []).map((p) => [p.id, p]));
+    renderMatches();
+  }
+
+  function renderMatches() {
+    const tbody = document.querySelector('#matches-table tbody');
+    tbody.innerHTML = '';
+    for (const m of matches) {
+      const tr = document.createElement('tr');
+      const cells = [
+        matchPeople[m.mentor]?.name || m.mentor,
+        matchPeople[m.mentee]?.name || m.mentee,
+        m.cohort,
+        typeof m.score === 'number' ? m.score.toFixed(2) : m.score,
+        m.created_at ? new Date(m.created_at).toLocaleString() : '',
+      ];
+      for (const c of cells) {
+        const td = document.createElement('td');
+        td.textContent = c || '';
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+    document.getElementById('matches-status').textContent = `${matches.length} match${matches.length === 1 ? '' : 'es'}.`;
+  }
+
+  document.getElementById('generate-matches').addEventListener('click', async () => {
+    const status = document.getElementById('matching-pipeline-status');
+    status.textContent = 'Starting…';
+    const { ok, body } = await dispatchWorkflow('run-matching.yml', false);
+    status.textContent = ok
+      ? 'Started. Refresh in a few minutes to see results below.'
+      : `Couldn't start: ${body.error || 'unknown error'}`;
+  });
+
+  document.getElementById('download-matches').addEventListener('click', () => {
+    const status = document.getElementById('download-matches-status');
+    if (!matches.length) { status.textContent = 'No matches to download.'; return; }
+    const header = ['mentor_email', 'mentor_name', 'mentee_email', 'mentee_name', 'cohort', 'score'];
+    const lines = [header, ...matches.map((m) => [
+      matchPeople[m.mentor]?.email || '', matchPeople[m.mentor]?.name || '',
+      matchPeople[m.mentee]?.email || '', matchPeople[m.mentee]?.name || '',
+      m.cohort, m.score,
+    ])];
+    const csv = toCsvString(lines);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `banter-matches-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    status.textContent = `Downloaded ${matches.length} match(es).`;
+  });
+
+  // Minimal quote-aware CSV parser -- the export always quotes every field,
+  // so this only needs to undo that, not handle arbitrary CSV dialects.
+  function parseCsv(text) {
+    const rows = [];
+    let row = [], field = '', inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false; }
+        else field += c;
+      } else if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\r') { /* skip, \n ends the row */ }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else field += c;
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    return rows.filter((r) => !(r.length === 1 && r[0] === ''));
+  }
+
+  document.getElementById('import-matches-btn').addEventListener('click', async () => {
+    const input = document.getElementById('import-matches-input');
+    const status = document.getElementById('matches-import-status');
+    const results = document.getElementById('matches-import-results');
+    results.innerHTML = '';
+    const file = input.files[0];
+    if (!file) { status.textContent = 'Choose a CSV file first.'; return; }
+
+    const rows = parseCsv((await file.text()).replace(/^﻿/, ''));
+    if (!rows.length) { status.textContent = 'Empty file.'; return; }
+    const header = rows[0].map((h) => h.trim().toLowerCase());
+    const col = (name) => header.indexOf(name);
+    const need = ['mentor_email', 'mentor_name', 'mentee_email', 'mentee_name', 'cohort', 'score'];
+    const missing = need.filter((n) => col(n) === -1);
+    if (missing.length) { status.textContent = `Missing column(s): ${missing.join(', ')}.`; return; }
+
+    // Resolve every referenced email in one query so the whole file can be
+    // validated before anything is written.
+    const emails = [...new Set(rows.slice(1)
+      .flatMap((r) => [r[col('mentor_email')], r[col('mentee_email')]])
+      .map((e) => (e || '').trim().toLowerCase()).filter(Boolean))];
+    const { data: people, error: lookupError } = emails.length
+      ? await sb.from('survey_responses').select('id,email,cohort').in('email', emails)
+      : { data: [] };
+    if (lookupError) { status.textContent = `Couldn't validate: ${lookupError.message}`; return; }
+    const byEmail = new Map();
+    for (const p of people) {
+      if (!byEmail.has(p.email)) byEmail.set(p.email, []);
+      byEmail.get(p.email).push(p);
+    }
+
+    const errors = [];
+    const seenMentees = new Set();
+    const parsed = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      const line = i + 1;
+      const mentorEmail = (r[col('mentor_email')] || '').trim().toLowerCase();
+      const menteeEmail = (r[col('mentee_email')] || '').trim().toLowerCase();
+      const cohort = (r[col('cohort')] || '').trim();
+      const score = Number(r[col('score')]);
+      const mentorMatches = byEmail.get(mentorEmail) || [];
+      const menteeMatches = byEmail.get(menteeEmail) || [];
+      if (!mentorMatches.length) errors.push(`Row ${line}: no application found for mentor email "${mentorEmail}".`);
+      else if (mentorMatches.length > 1) errors.push(`Row ${line}: mentor email "${mentorEmail}" matches applications in more than one cohort. The system cannot tell which one you mean.`);
+      if (!menteeMatches.length) errors.push(`Row ${line}: no application found for mentee email "${menteeEmail}".`);
+      else if (menteeMatches.length > 1) errors.push(`Row ${line}: mentee email "${menteeEmail}" matches applications in more than one cohort. The system cannot tell which one you mean.`);
+      if (!['students', 'young_alums'].includes(cohort)) errors.push(`Row ${line}: cohort must be students or young_alums, got "${cohort}".`);
+      if (!Number.isFinite(score) || score < 0) errors.push(`Row ${line}: score "${r[col('score')]}" must be a number 0 or greater.`);
+      if (menteeEmail && seenMentees.has(menteeEmail)) errors.push(`Row ${line}: mentee ${menteeEmail} appears more than once.`);
+      if (menteeEmail) seenMentees.add(menteeEmail);
+      if (mentorMatches.length && menteeMatches.length && !errors.length) {
+        parsed.push({ mentor: mentorMatches[0].id, mentee: menteeMatches[0].id, cohort, score });
+      }
+    }
+
+    if (errors.length) {
+      status.textContent = `${errors.length} problem(s) found, nothing imported.`;
+      for (const e of errors) { const li = document.createElement('li'); li.textContent = e; results.appendChild(li); }
+      return;
+    }
+
+    status.textContent = 'Replacing matches…';
+    // Single RPC call, one transaction, server-side: replaces the whole
+    // table's content from `parsed` atomically. If any row fails (a bad
+    // constraint, a concurrent write conflict) the whole call rolls back --
+    // no partial state is reachable, unlike a client-side upsert-then-delete
+    // sequence spread across multiple requests.
+    const { error: rpcError } = await sb.rpc('replace_matches', { rows: parsed });
+    if (rpcError) { status.textContent = `Couldn't replace matches: ${rpcError.message}`; return; }
+    status.textContent = `Replaced with ${parsed.length} match(es) from the file.`;
+    input.value = '';
+    loadMatches();
+  });
+
+  document.getElementById('approve-matches').addEventListener('click', async () => {
+    if (!matches.length) { document.getElementById('matching-pipeline-status').textContent = 'No matches to send.'; return; }
+    if (!confirm('This emails every matched pair in the table. Are you sure?')) return;
+    const status = document.getElementById('matching-pipeline-status');
+    status.textContent = 'Sending…';
+    // Notify-only path: reads matches JOIN survey_responses and emails from
+    // that, never re-runs process.match_students_mentors, never writes
+    // `matches` -- confirmed by the backend, verified locally on their end.
+    const { ok, body } = await dispatchWorkflow('notify-matches.yml');
+    status.textContent = ok
+      ? 'Started. Announcement emails are going out.'
+      : `Couldn't start: ${body.error || 'unknown error'}`;
+  });
+
+  // --- Drag-to-scroll for wide tables (mouse users don't get trackpad swipe) -
+
+  for (const el of document.querySelectorAll('.table-responsive')) {
+    let dragging = false, startX = 0, startLeft = 0;
+    el.addEventListener('mousedown', (e) => {
+      dragging = true; startX = e.pageX; startLeft = el.scrollLeft;
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      el.scrollLeft = startLeft - (e.pageX - startX);
+    });
+    window.addEventListener('mouseup', () => { dragging = false; });
+  }
+
+  function loadDashboard() {
+    loadCycleIntoEditor();
+    loadResponses();
+    loadDecks();
+    loadMatches();
+  }
+</script>
+</body>
+</html>
