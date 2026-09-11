@@ -263,11 +263,10 @@
 
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
-  import { SUPABASE_URL, ANON_KEY, renderTimeline } from '/resources/banter/js/banter.js';
+  import { SUPABASE_URL, ANON_KEY, renderTimeline, SAFE_HREF } from '/resources/banter/js/banter.js';
 
   const sb = createClient(SUPABASE_URL, ANON_KEY);
   const CYCLE_KEY = 'banter_cycle';
-  const SAFE_HREF = /^(https?:|\/|mailto:)/;
 
   const loginPanel = document.getElementById('login-panel');
   const notAuthorized = document.getElementById('not-authorized');
@@ -315,7 +314,14 @@
   }
 
   sb.auth.getSession().then(({ data: { session } }) => render(session));
-  sb.auth.onAuthStateChange((_event, session) => render(session));
+  sb.auth.onAuthStateChange((event, session) => {
+    // TOKEN_REFRESHED fires silently in the background while a tab stays
+    // open. render() -> loadDashboard() -> loadCycleIntoEditor() wipes and
+    // repopulates the deadline editor's rows, discarding unsaved edits.
+    // Only react to events that actually change who is signed in.
+    if (event === 'TOKEN_REFRESHED') return;
+    render(session);
+  });
 
   // --- Deadline editor ------------------------------------------------------
 
@@ -325,7 +331,7 @@
     const cells = m.cells || [{}, {}, {}];
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input type="date" class="m-date" value="${m.date || ''}"></td>
+      <td><input type="date" class="m-date" value="${String(m.date || '').replace(/"/g, '&quot;')}"></td>
       <td><input type="text" class="m-display" value="${(m.display || '').replace(/"/g, '&quot;')}" placeholder="e.g. ~Monthly through May"></td>
       ${[0, 1, 2].map((i) => `
         <td>
@@ -590,17 +596,23 @@
   document.getElementById('filter-cohort').addEventListener('change', renderResponses);
   document.getElementById('filter-text').addEventListener('input', renderResponses);
 
+  // Shared by the applications and matches CSV exports below.
+  function csvEscape(v) {
+    let s = v == null ? '' : String(v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // formula-injection guard for Excel/Sheets
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+
+  function toCsvString(lines) {
+    return '﻿' + lines.map((r) => r.map(csvEscape).join(',')).join('\r\n'); // BOM: Excel reads UTF-8
+  }
+
   function toCsv(rows) {
     const base = ['cohort', 'name', 'email', 'grad_year', 'major', 'timezone', 'created_at'];
     const rawKeys = [...new Set(rows.flatMap((r) => Object.keys(r.raw || {})))];
     const cols = [...base, ...rawKeys];
-    const esc = (v) => {
-      let s = v == null ? '' : String(v);
-      if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // formula-injection guard for Excel/Sheets
-      return '"' + s.replace(/"/g, '""') + '"';
-    };
     const lines = [cols, ...rows.map((r) => cols.map((c) => (base.includes(c) ? r[c] : (r.raw || {})[c])))];
-    return '﻿' + lines.map((r) => r.map(esc).join(',')).join('\r\n'); // BOM: Excel reads UTF-8
+    return toCsvString(lines);
   }
 
   document.getElementById('export-csv').addEventListener('click', () => {
@@ -833,12 +845,6 @@
       : `Couldn't start: ${body.error || 'unknown error'}`;
   });
 
-  function csvEscape(v) {
-    let s = v == null ? '' : String(v);
-    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // formula-injection guard for Excel/Sheets
-    return '"' + s.replace(/"/g, '""') + '"';
-  }
-
   document.getElementById('download-matches').addEventListener('click', () => {
     const status = document.getElementById('download-matches-status');
     if (!matches.length) { status.textContent = 'No matches to download.'; return; }
@@ -848,7 +854,7 @@
       matchPeople[m.mentee]?.email || '', matchPeople[m.mentee]?.name || '',
       m.cohort, m.score,
     ])];
-    const csv = '﻿' + lines.map((r) => r.map(csvEscape).join(',')).join('\r\n'); // BOM: Excel reads UTF-8
+    const csv = toCsvString(lines);
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
     a.download = `banter-matches-${new Date().toISOString().slice(0, 10)}.csv`;
@@ -940,10 +946,25 @@
     }
 
     status.textContent = 'Replacing matches…';
-    const { error: delError } = await sb.from('matches').delete().gte('created_at', '1900-01-01');
-    if (delError) { status.textContent = `Couldn't clear existing matches: ${delError.message}`; return; }
-    const { error: insError } = parsed.length ? await sb.from('matches').insert(parsed) : { error: null };
-    if (insError) { status.textContent = `Couldn't write new matches: ${insError.message}`; return; }
+    // Upsert first, delete stale rows after. If the upsert fails, nothing
+    // has been removed -- the table is unchanged, not emptied. `mentee` is
+    // the table's primary key, so this updates existing pairs in place and
+    // inserts new ones in one call, rather than a delete-then-insert that
+    // would leave the table empty if the insert half failed.
+    const { error: upsertError } = parsed.length
+      ? await sb.from('matches').upsert(parsed, { onConflict: 'mentee' })
+      : { error: null };
+    if (upsertError) { status.textContent = `Couldn't write matches: ${upsertError.message}`; return; }
+    const keepIds = new Set(parsed.map((p) => p.mentee));
+    const staleIds = matches.map((m) => m.mentee).filter((id) => !keepIds.has(id));
+    if (staleIds.length) {
+      const { error: delError } = await sb.from('matches').delete().in('mentee', staleIds);
+      if (delError) {
+        status.textContent = `Saved the new matches, but couldn't remove ${staleIds.length} dropped pairing(s): ${delError.message}`;
+        loadMatches();
+        return;
+      }
+    }
     status.textContent = `Replaced with ${parsed.length} match(es) from the file.`;
     input.value = '';
     loadMatches();

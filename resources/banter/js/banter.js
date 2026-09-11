@@ -10,7 +10,10 @@ export const SUPABASE_URL = 'https://lvnfhgsmwtwztlgmxtap.supabase.co';
 // The SERVICE ROLE key must never appear in this repo.
 export const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bmZoZ3Ntd3R3enRsZ214dGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwNzE2MDAsImV4cCI6MjEwNDY0NzYwMH0.iAzBg2UcSMyZ-K1d5aWfKvvHe0H6rq_waUQVw_0gS0k';
 
-const SAFE_HREF = /^(https?:|\/|mailto:)/;
+// Exported so admin/index.html validates admin-entered links against the
+// same allow-list this file uses to decide what the public page renders as
+// a link, rather than keeping a second copy of the pattern in sync by hand.
+export const SAFE_HREF = /^(https?:|\/|mailto:)/;
 
 // Verbatim from the original inline script (index.html), which compared a
 // hand-authored 'YYYYMMDD-YYYYMMDD' className to today's integer date.
