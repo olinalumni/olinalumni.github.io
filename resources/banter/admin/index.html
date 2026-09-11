@@ -136,7 +136,11 @@
 
     <h2>Mentor decks</h2>
     <p>Generate profile decks after the mentor deadline closes, then review each one before it becomes visible
-      to mentees. Regenerating a deck resets its approval — a content change always gets re-reviewed.</p>
+      to mentees. Regenerating a deck resets its approval — a content change always gets re-reviewed. Approving
+      a cohort's decks for the first time also opens that cohort's own application window below — the two
+      mentee cohorts are independent, approving one never affects the other.</p>
+    <h3>Application windows</h3>
+    <div id="window-status" class="row-inline"></div>
     <p class="row-inline">
       <button id="generate-decks" type="button">Generate mentor decks</button>
     </p>
@@ -169,11 +173,10 @@
     <ul id="import-results"></ul>
 
     <h2>Matches</h2>
-    <p>Run matching in review mode first, check the results below, then run again with emails on when you're
-      ready to notify people.</p>
+    <p>Run the algorithm, check the results below, download and edit them by hand if something needs fixing, then
+      approve when they're ready — approving is the only action that emails anyone.</p>
     <p class="row-inline">
-      <label style="margin:0"><input type="checkbox" id="send-emails" style="width:auto;padding:0"> Send match announcement emails</label>
-      <button id="run-matching" type="button">Run matching</button>
+      <button id="generate-matches" type="button" class="secondary">Generate matches</button>
     </p>
     <p id="matching-pipeline-status" role="status" aria-live="polite"></p>
     <p id="matches-status" role="status" aria-live="polite"></p>
@@ -185,6 +188,26 @@
         <tbody></tbody>
       </table>
     </div>
+    <p class="row-inline">
+      <button id="download-matches" type="button" class="secondary">Download matches (CSV)</button>
+    </p>
+
+    <h3>Import edited matches</h3>
+    <p>Not happy with a pairing? Download the CSV above, edit it in a spreadsheet, then import it back here —
+      the file you import replaces every match currently in the table above. The whole file is checked first;
+      if anything's wrong nothing is changed and every problem is listed.</p>
+    <input id="import-matches-input" type="file" accept=".csv,text/csv">
+    <p class="row-inline">
+      <button id="import-matches-btn" type="button">Import CSV</button>
+    </p>
+    <p id="matches-import-status" role="status" aria-live="polite"></p>
+    <ul id="matches-import-results"></ul>
+
+    <p class="row-inline">
+      <button id="approve-matches" type="button">Approve &amp; send emails</button>
+    </p>
+    <p><small>This emails a match announcement to every pair currently in the table above — not a fresh
+      algorithm run, whatever you see there (including any manual corrections) is what gets sent.</small></p>
 
     <h2>Applications</h2>
     <div id="filters">
@@ -407,6 +430,68 @@
     editorRows.innerHTML = '';
     (cycle.milestones || []).forEach((m) => addRow(m));
     if (!cycle.milestones?.length) addRow();
+    renderWindowStatus(cycle);
+  }
+
+  // --- Mentee application windows, opened by deck approval, not a date ------
+
+  function windowState(d) {
+    if (!d?.open) return 'not yet open';
+    const today = new Date().toISOString().slice(0, 10);
+    if (d.close && today > d.close) return `closed ${d.close}`;
+    return `open since ${d.open}`;
+  }
+
+  function renderWindowStatus(cycle) {
+    const el = document.getElementById('window-status');
+    el.innerHTML = '';
+    const labels = { students: 'Current students', young_alums: 'Recent alumni' };
+    for (const audience of ['students', 'young_alums']) {
+      const d = cycle.deadlines?.[audience] || {};
+      const div = document.createElement('div');
+      div.innerHTML = `<strong>${labels[audience]}:</strong> ${windowState(d)} `;
+      if (d.open) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'secondary';
+        btn.textContent = 'Close now';
+        btn.addEventListener('click', () => closeWindowNow(audience, labels[audience]));
+        div.appendChild(btn);
+      }
+      el.appendChild(div);
+    }
+  }
+
+  // Sets `open` to today, but only the first time -- a later regenerate +
+  // reapprove of the same audience's decks must not reopen or reset it.
+  // Presence of `open` is the "already happened once" signal, no separate
+  // tracking flag needed.
+  async function maybeAutoOpenWindow(audience) {
+    if (audience !== 'students' && audience !== 'young_alums') return;
+    const { data } = await sb.from('site_config').select('value').eq('key', CYCLE_KEY).maybeSingle();
+    if (!data) return;
+    const cycle = data.value;
+    if (cycle.deadlines?.[audience]?.open) return;
+    const updated = {
+      ...cycle,
+      deadlines: { ...cycle.deadlines, [audience]: { ...cycle.deadlines?.[audience], open: new Date().toISOString().slice(0, 10) } },
+    };
+    await sb.from('site_config').update({ value: updated, updated_at: new Date().toISOString() }).eq('key', CYCLE_KEY);
+  }
+
+  // Manual mistake-recovery escape hatch -- deliberately not wired to
+  // anything automatic (not regenerate, not reapproval).
+  async function closeWindowNow(audience, label) {
+    if (!confirm(`Close the ${label} application window right now? This is for correcting a genuine mistake.`)) return;
+    const { data } = await sb.from('site_config').select('value').eq('key', CYCLE_KEY).maybeSingle();
+    if (!data) return;
+    const cycle = data.value;
+    const updated = {
+      ...cycle,
+      deadlines: { ...cycle.deadlines, [audience]: { ...cycle.deadlines?.[audience], close: new Date().toISOString().slice(0, 10) } },
+    };
+    await sb.from('site_config').update({ value: updated, updated_at: new Date().toISOString() }).eq('key', CYCLE_KEY);
+    loadCycleIntoEditor();
   }
 
   // --- Applications list ------------------------------------------------
@@ -557,7 +642,9 @@
             .update({ approved: true, approved_at: new Date().toISOString() })
             .eq('id', d.id);
           if (error) { alert(`Couldn't approve: ${error.message}`); return; }
+          await maybeAutoOpenWindow(d.audience);
           loadDecks();
+          loadCycleIntoEditor();
         });
         actionTd.appendChild(approveBtn);
       }
@@ -646,6 +733,9 @@
 
   // --- Matches ------------------------------------------------------------
 
+  let matches = [];
+  let matchPeople = {}; // survey_responses id -> {name, email}
+
   async function loadMatches() {
     const status = document.getElementById('matches-status');
     status.textContent = 'Loading…';
@@ -655,14 +745,19 @@
     const { data: people } = ids.length
       ? await sb.from('survey_responses').select('id,name,email').in('id', ids)
       : { data: [] };
-    const byId = Object.fromEntries((people || []).map((p) => [p.id, p]));
+    matches = matchRows;
+    matchPeople = Object.fromEntries((people || []).map((p) => [p.id, p]));
+    renderMatches();
+  }
+
+  function renderMatches() {
     const tbody = document.querySelector('#matches-table tbody');
     tbody.innerHTML = '';
-    for (const m of matchRows) {
+    for (const m of matches) {
       const tr = document.createElement('tr');
       const cells = [
-        byId[m.mentor]?.name || m.mentor,
-        byId[m.mentee]?.name || m.mentee,
+        matchPeople[m.mentor]?.name || m.mentor,
+        matchPeople[m.mentee]?.name || m.mentee,
         m.cohort,
         typeof m.score === 'number' ? m.score.toFixed(2) : m.score,
         m.created_at ? new Date(m.created_at).toLocaleString() : '',
@@ -674,17 +769,144 @@
       }
       tbody.appendChild(tr);
     }
-    status.textContent = `${matchRows.length} match${matchRows.length === 1 ? '' : 'es'}.`;
+    document.getElementById('matches-status').textContent = `${matches.length} match${matches.length === 1 ? '' : 'es'}.`;
   }
 
-  document.getElementById('run-matching').addEventListener('click', async () => {
-    const sendEmails = document.getElementById('send-emails').checked;
-    if (sendEmails && !confirm('This will email every matched pair announcing their match. Are you sure?')) return;
+  document.getElementById('generate-matches').addEventListener('click', async () => {
     const status = document.getElementById('matching-pipeline-status');
     status.textContent = 'Starting…';
-    const { ok, body } = await dispatchWorkflow('run-matching.yml', sendEmails);
+    const { ok, body } = await dispatchWorkflow('run-matching.yml', false);
     status.textContent = ok
       ? 'Started. Refresh in a few minutes to see results below.'
+      : `Couldn't start: ${body.error || 'unknown error'}`;
+  });
+
+  function csvEscape(v) {
+    let s = v == null ? '' : String(v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // formula-injection guard for Excel/Sheets
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+
+  document.getElementById('download-matches').addEventListener('click', () => {
+    if (!matches.length) return;
+    const header = ['mentor_email', 'mentor_name', 'mentee_email', 'mentee_name', 'cohort', 'score'];
+    const lines = [header, ...matches.map((m) => [
+      matchPeople[m.mentor]?.email || '', matchPeople[m.mentor]?.name || '',
+      matchPeople[m.mentee]?.email || '', matchPeople[m.mentee]?.name || '',
+      m.cohort, m.score,
+    ])];
+    const csv = '﻿' + lines.map((r) => r.map(csvEscape).join(',')).join('\r\n'); // BOM: Excel reads UTF-8
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `banter-matches-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  // Minimal quote-aware CSV parser -- the export always quotes every field,
+  // so this only needs to undo that, not handle arbitrary CSV dialects.
+  function parseCsv(text) {
+    const rows = [];
+    let row = [], field = '', inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false; }
+        else field += c;
+      } else if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\r') { /* skip, \n ends the row */ }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else field += c;
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    return rows.filter((r) => !(r.length === 1 && r[0] === ''));
+  }
+
+  document.getElementById('import-matches-btn').addEventListener('click', async () => {
+    const input = document.getElementById('import-matches-input');
+    const status = document.getElementById('matches-import-status');
+    const results = document.getElementById('matches-import-results');
+    results.innerHTML = '';
+    const file = input.files[0];
+    if (!file) { status.textContent = 'Choose a CSV file first.'; return; }
+
+    const rows = parseCsv((await file.text()).replace(/^﻿/, ''));
+    if (!rows.length) { status.textContent = 'Empty file.'; return; }
+    const header = rows[0].map((h) => h.trim().toLowerCase());
+    const col = (name) => header.indexOf(name);
+    const need = ['mentor_email', 'mentor_name', 'mentee_email', 'mentee_name', 'cohort', 'score'];
+    const missing = need.filter((n) => col(n) === -1);
+    if (missing.length) { status.textContent = `Missing column(s): ${missing.join(', ')}.`; return; }
+
+    // Resolve every referenced email in one query so the whole file can be
+    // validated before anything is written.
+    const emails = [...new Set(rows.slice(1)
+      .flatMap((r) => [r[col('mentor_email')], r[col('mentee_email')]])
+      .map((e) => (e || '').trim().toLowerCase()).filter(Boolean))];
+    const { data: people, error: lookupError } = emails.length
+      ? await sb.from('survey_responses').select('id,email,cohort').in('email', emails)
+      : { data: [] };
+    if (lookupError) { status.textContent = `Couldn't validate: ${lookupError.message}`; return; }
+    const byEmail = new Map();
+    for (const p of people) {
+      if (!byEmail.has(p.email)) byEmail.set(p.email, []);
+      byEmail.get(p.email).push(p);
+    }
+
+    const errors = [];
+    const seenMentees = new Set();
+    const parsed = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      const line = i + 1;
+      const mentorEmail = (r[col('mentor_email')] || '').trim().toLowerCase();
+      const menteeEmail = (r[col('mentee_email')] || '').trim().toLowerCase();
+      const cohort = (r[col('cohort')] || '').trim();
+      const score = Number(r[col('score')]);
+      const mentorMatches = byEmail.get(mentorEmail) || [];
+      const menteeMatches = byEmail.get(menteeEmail) || [];
+      if (!mentorMatches.length) errors.push(`Row ${line}: no application found for mentor email "${mentorEmail}".`);
+      else if (mentorMatches.length > 1) errors.push(`Row ${line}: mentor email "${mentorEmail}" has more than one application (different cohorts) — ambiguous.`);
+      if (!menteeMatches.length) errors.push(`Row ${line}: no application found for mentee email "${menteeEmail}".`);
+      else if (menteeMatches.length > 1) errors.push(`Row ${line}: mentee email "${menteeEmail}" has more than one application (different cohorts) — ambiguous.`);
+      if (!['students', 'young_alums'].includes(cohort)) errors.push(`Row ${line}: cohort must be students or young_alums, got "${cohort}".`);
+      if (!Number.isFinite(score) || score < 0) errors.push(`Row ${line}: score "${r[col('score')]}" must be a number 0 or greater.`);
+      if (menteeEmail && seenMentees.has(menteeEmail)) errors.push(`Row ${line}: mentee ${menteeEmail} appears more than once.`);
+      if (menteeEmail) seenMentees.add(menteeEmail);
+      if (mentorMatches.length && menteeMatches.length && !errors.length) {
+        parsed.push({ mentor: mentorMatches[0].id, mentee: menteeMatches[0].id, cohort, score });
+      }
+    }
+
+    if (errors.length) {
+      status.textContent = `${errors.length} problem(s) found, nothing imported.`;
+      for (const e of errors) { const li = document.createElement('li'); li.textContent = e; results.appendChild(li); }
+      return;
+    }
+
+    status.textContent = 'Replacing matches…';
+    const { error: delError } = await sb.from('matches').delete().gte('created_at', '1900-01-01');
+    if (delError) { status.textContent = `Couldn't clear existing matches: ${delError.message}`; return; }
+    const { error: insError } = parsed.length ? await sb.from('matches').insert(parsed) : { error: null };
+    if (insError) { status.textContent = `Couldn't write new matches: ${insError.message}`; return; }
+    status.textContent = `Replaced with ${parsed.length} match(es) from the file.`;
+    input.value = '';
+    loadMatches();
+  });
+
+  document.getElementById('approve-matches').addEventListener('click', async () => {
+    if (!matches.length) { document.getElementById('matching-pipeline-status').textContent = 'No matches to send.'; return; }
+    if (!confirm('This will email every matched pair currently in the table. Are you sure?')) return;
+    const status = document.getElementById('matching-pipeline-status');
+    status.textContent = 'Sending…';
+    // Notify-only path: emails whatever is currently in `matches`, does not
+    // re-run the algorithm. Workflow name pending backend confirmation --
+    // shows "Unknown workflow" until dispatch-workflow's allow-list and this
+    // identifier are updated together once they confirm the actual name.
+    const { ok, body } = await dispatchWorkflow('send-match-emails.yml');
+    status.textContent = ok
+      ? 'Started. Announcement emails are going out.'
       : `Couldn't start: ${body.error || 'unknown error'}`;
   });
 
