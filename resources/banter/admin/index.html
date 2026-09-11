@@ -954,40 +954,13 @@
     }
 
     status.textContent = 'Replacing matches…';
-    // Upsert first, delete stale rows after. If the upsert fails, nothing
-    // has been removed -- the table is unchanged, not emptied. `mentee` is
-    // the table's primary key, so this updates existing pairs in place and
-    // inserts new ones in one call, rather than a delete-then-insert that
-    // would leave the table empty if the insert half failed.
-    const { error: upsertError } = parsed.length
-      ? await sb.from('matches').upsert(parsed, { onConflict: 'mentee' })
-      : { error: null };
-    if (upsertError) { status.textContent = `Couldn't write matches: ${upsertError.message}`; return; }
-
-    // Read the CURRENT mentee set right before deciding what's stale,
-    // instead of the in-memory `matches` array from the last page load.
-    // That snapshot can predate a concurrent matching run or another
-    // admin's edit; acting on it could leave an unintended row untouched
-    // (or delete one someone else just added). This still isn't a single
-    // atomic transaction -- a row written in the instant between this read
-    // and the delete below could still slip through -- but it shrinks the
-    // race window from "however long the tab's been open" to one round trip.
-    const keepIds = new Set(parsed.map((p) => p.mentee));
-    const { data: currentRows, error: currentError } = await sb.from('matches').select('mentee');
-    if (currentError) {
-      status.textContent = `Saved the new matches, but couldn't check for rows to remove: ${currentError.message}`;
-      loadMatches();
-      return;
-    }
-    const staleIds = currentRows.map((m) => m.mentee).filter((id) => !keepIds.has(id));
-    if (staleIds.length) {
-      const { error: delError } = await sb.from('matches').delete().in('mentee', staleIds);
-      if (delError) {
-        status.textContent = `Saved the new matches, but couldn't remove ${staleIds.length} dropped pairing(s): ${delError.message}`;
-        loadMatches();
-        return;
-      }
-    }
+    // Single RPC call, one transaction, server-side: replaces the whole
+    // table's content from `parsed` atomically. If any row fails (a bad
+    // constraint, a concurrent write conflict) the whole call rolls back --
+    // no partial state is reachable, unlike a client-side upsert-then-delete
+    // sequence spread across multiple requests.
+    const { error: rpcError } = await sb.rpc('replace_matches', { rows: parsed });
+    if (rpcError) { status.textContent = `Couldn't replace matches: ${rpcError.message}`; return; }
     status.textContent = `Replaced with ${parsed.length} match(es) from the file.`;
     input.value = '';
     loadMatches();
