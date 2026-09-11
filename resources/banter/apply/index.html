@@ -34,7 +34,7 @@
   <p>Your response is available to program administrators. They use it to prepare profile decks and matches. Submit once; contact the organizers if you need to change your response.</p>
 
   <div id="closed-notice" role="alert">
-    <p><strong>Applications for this cycle are closed.</strong> Email <a href="mailto:banter@olin.edu">banter@olin.edu</a> if you'd still like to join — we sometimes have room.</p>
+    <p><strong>Applications for this role are closed.</strong> <span id="closed-detail"></span> Email <a href="mailto:banter@olin.edu">banter@olin.edu</a> if you'd still like to join — we sometimes have room.</p>
   </div>
 
   <noscript>This form requires JavaScript to submit.</noscript>
@@ -104,8 +104,11 @@
   const preference = document.getElementById('preference');
   const closedNotice = document.getElementById('closed-notice');
 
+  const closedDetail = document.getElementById('closed-detail');
+
   cohort.addEventListener('change', () => {
     preference.required = cohort.value === 'mentor_alums';
+    checkGate();
   });
 
   // Prefill from the timeline's ?cohort= links (e.g. ?cohort=mentor_alums).
@@ -115,22 +118,46 @@
     cohort.dispatchEvent(new Event('change'));
   }
 
-  // Deadline gate. submit-response has no deadline check of its own, so this
-  // is the only enforcement — a stale tab can still submit late. Fail open
-  // on a config load error rather than blocking a legitimate applicant over
-  // a network hiccup; the server-side behavior is unaffected either way.
-  loadCycle().then((cycle) => {
-    const today = new Date().toISOString().slice(0, 10);
-    const isOpen = !cycle.applications_open || today >= cycle.applications_open;
-    const isBeforeClose = !cycle.applications_close || today <= cycle.applications_close;
-    if (!isOpen || !isBeforeClose) {
-      form.hidden = true;
-      closedNotice.style.display = 'block';
+  // Per-cohort deadline gate, keyed by whichever role is currently selected.
+  // submit-response (v3+) enforces the same window server-side; this is UX
+  // only, so a stale tab can't actually get past the real check. Fail open
+  // on a config-load error — don't block a legitimate applicant over an
+  // unrelated network hiccup; the server-side gate is unaffected either way.
+  let cycleData = null;
+
+  function checkGate() {
+    const role = cohort.value;
+    if (!role || !cycleData) {
+      form.hidden = false;
+      closedNotice.style.display = 'none';
+      return true;
     }
+    const d = cycleData.deadlines?.[role];
+    if (!d) {
+      form.hidden = false;
+      closedNotice.style.display = 'none';
+      return true;
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    const isOpen = (!d.open || today >= d.open) && (!d.close || today <= d.close);
+    form.hidden = !isOpen;
+    closedNotice.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) {
+      closedDetail.textContent = (d.close && today > d.close)
+        ? `This deadline closed on ${d.close}.`
+        : `This opens ${d.open}.`;
+    }
+    return isOpen;
+  }
+
+  loadCycle().then((cycle) => {
+    cycleData = cycle;
+    checkGate();
   }).catch(() => {});
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (!checkGate()) return;
     if (!form.reportValidity()) return;
     errorBox.textContent = '';
     const data = new FormData(form);
@@ -162,8 +189,14 @@
         body,
         signal: AbortSignal.timeout(20000),
       });
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error('Submission failed');
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) {
+        status.textContent = '';
+        errorBox.textContent = result.error
+          || 'We could not confirm your signup. Your entries are still here. Please try again, or contact the organizers if this continues.';
+        errorBox.focus();
+        return;
+      }
       status.textContent = 'Thank you. Your signup has been received. If you submitted before, your original response is kept. Contact the organizers for changes.';
       form.reset();
       preference.required = false;

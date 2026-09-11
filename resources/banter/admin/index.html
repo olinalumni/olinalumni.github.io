@@ -84,6 +84,23 @@
       <div><label for="col-2">Column 3 header</label><input id="col-2" type="text"></div>
     </div>
 
+    <h3>Application windows</h3>
+    <p>Each role's own open/close dates for the <a href="/resources/banter/apply/">apply form</a>. Enforced on the
+      server, not just hidden in the browser — leave a field blank for no restriction on that side.
+      "Alumni mentor" also covers the general alumni mentor pool.</p>
+    <div class="row-inline">
+      <div><label for="dl-mentor_alums-open">Alumni mentor opens</label><input id="dl-mentor_alums-open" type="date"></div>
+      <div><label for="dl-mentor_alums-close">closes</label><input id="dl-mentor_alums-close" type="date"></div>
+    </div>
+    <div class="row-inline">
+      <div><label for="dl-students-open">Student mentee opens</label><input id="dl-students-open" type="date"></div>
+      <div><label for="dl-students-close">closes</label><input id="dl-students-close" type="date"></div>
+    </div>
+    <div class="row-inline">
+      <div><label for="dl-young_alums-open">Recent alumni mentee opens</label><input id="dl-young_alums-open" type="date"></div>
+      <div><label for="dl-young_alums-close">closes</label><input id="dl-young_alums-close" type="date"></div>
+    </div>
+
     <div class="table-responsive">
       <table id="editor-table">
         <thead>
@@ -259,6 +276,25 @@
 
   document.getElementById('add-row').addEventListener('click', () => addRow());
 
+  const DEADLINE_ROLES = ['mentor_alums', 'students', 'young_alums'];
+
+  function readDeadlines() {
+    const deadlines = {};
+    for (const role of DEADLINE_ROLES) {
+      const open = document.getElementById(`dl-${role}-open`).value;
+      const close = document.getElementById(`dl-${role}-close`).value;
+      const d = {};
+      if (open) d.open = open;
+      if (close) d.close = close;
+      if (Object.keys(d).length) deadlines[role] = d;
+    }
+    // "alumni" is the general mentor pool, not a role exposed in the apply
+    // form's own selector — it shares the alumni-mentor window rather than
+    // needing its own pair of inputs here.
+    if (deadlines.mentor_alums) deadlines.alumni = deadlines.mentor_alums;
+    return deadlines;
+  }
+
   function readCycleForm() {
     const columns = [0, 1, 2].map((i) => document.getElementById(`col-${i}`).value.trim());
     const milestones = [...editorRows.querySelectorAll('tr')].map((tr) => ({
@@ -274,6 +310,7 @@
     return {
       year: Number(document.getElementById('cycle-year').value),
       columns,
+      deadlines: readDeadlines(),
       milestones: milestones.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999')),
     };
   }
@@ -287,6 +324,12 @@
         if (cell.href && !SAFE_HREF.test(cell.href)) {
           return `Row ${i + 1}: that link doesn't look like a valid URL.`;
         }
+      }
+    }
+    for (const role of DEADLINE_ROLES) {
+      const d = cycle.deadlines[role];
+      if (d?.open && d?.close && d.open > d.close) {
+        return `${role.replace('_', ' ')} application window: opens after it closes.`;
       }
     }
     return null;
@@ -340,6 +383,10 @@
     const cycle = data.value;
     document.getElementById('cycle-year').value = cycle.year || '';
     [0, 1, 2].forEach((i) => { document.getElementById(`col-${i}`).value = cycle.columns?.[i] || ''; });
+    for (const role of DEADLINE_ROLES) {
+      document.getElementById(`dl-${role}-open`).value = cycle.deadlines?.[role]?.open || '';
+      document.getElementById(`dl-${role}-close`).value = cycle.deadlines?.[role]?.close || '';
+    }
     editorRows.innerHTML = '';
     (cycle.milestones || []).forEach((m) => addRow(m));
     if (!cycle.milestones?.length) addRow();
