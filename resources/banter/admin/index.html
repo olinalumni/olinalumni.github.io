@@ -900,11 +900,10 @@
     if (!confirm('This will email every matched pair currently in the table. Are you sure?')) return;
     const status = document.getElementById('matching-pipeline-status');
     status.textContent = 'Sending…';
-    // Notify-only path: emails whatever is currently in `matches`, does not
-    // re-run the algorithm. Workflow name pending backend confirmation --
-    // shows "Unknown workflow" until dispatch-workflow's allow-list and this
-    // identifier are updated together once they confirm the actual name.
-    const { ok, body } = await dispatchWorkflow('send-match-emails.yml');
+    // Notify-only path: reads matches JOIN survey_responses and emails from
+    // that, never re-runs process.match_students_mentors, never writes
+    // `matches` -- confirmed by the backend, verified locally on their end.
+    const { ok, body } = await dispatchWorkflow('notify-matches.yml');
     status.textContent = ok
       ? 'Started. Announcement emails are going out.'
       : `Couldn't start: ${body.error || 'unknown error'}`;
