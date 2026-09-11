@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign up for Banter · Olin Alumni</title>
+  <link rel="shortcut icon" href="/img/favicon.ico">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #172d3b; background: #faf9f6; font: 1rem/1.6 system-ui, sans-serif; }
+    main { max-width: 42rem; margin: 3rem auto; padding: 0 1.25rem 3rem; }
+    h1 { font-size: 2.3rem; line-height: 1.2; }
+    a.back { display: inline-block; margin-bottom: 1rem; color: #174b66; }
+    label { display: block; margin-top: 1.5rem; font-weight: 600; }
+    input, select, textarea, button { font: inherit; width: 100%; padding: .7rem; border: 1px solid #71818a; border-radius: .25rem; }
+    input, select, textarea { background: white; color: #172d3b; }
+    textarea { resize: vertical; }
+    button { margin-top: 2rem; background: #174b66; color: white; cursor: pointer; min-height: 48px; }
+    button:disabled { opacity: .65; cursor: wait; }
+    :focus-visible { outline: 3px solid #ad5300; outline-offset: 3px; }
+    small { display: block; }
+    #status { min-height: 3rem; }
+    #form-error { display: none; color: #a00; font-weight: 600; margin-top: 1rem; }
+    #form-error:not(:empty) { display: block; }
+    #closed-notice { display: none; background: #fff3e0; border: 1px solid #d98c00; border-radius: .25rem; padding: 1rem; margin-top: 1.5rem; }
+  </style>
+</head>
+<body>
+<main>
+  <a class="back" href="/resources/banter/">&larr; Back to Banter</a>
+  <p>Olin Alumni · Banter</p>
+  <h1>A conversation starts here.</h1>
+  <p>Sign up as a mentor or mentee. Tell us about yourself to help find a match.</p>
+  <p>Your response is available to program administrators. They use it to prepare profile decks and matches. Submit once; contact the organizers if you need to change your response.</p>
+
+  <div id="closed-notice" role="alert">
+    <p><strong>Applications for this role are closed.</strong> <span id="closed-detail"></span> Email <a href="mailto:banter@olin.edu">banter@olin.edu</a> if you'd still like to join — we sometimes have room.</p>
+  </div>
+
+  <noscript>This form requires JavaScript to submit.</noscript>
+  <form id="signup-form" method="post">
+    <label for="cohort">I am signing up as (required)</label>
+    <select id="cohort" name="cohort" required>
+      <option value="">Choose your role</option>
+      <option value="mentor_alums">Alumni mentor</option>
+      <option value="young_alums">Recent alumni mentee</option>
+      <option value="students">Student mentee</option>
+    </select>
+    <label for="field-0">Full name (required)</label>
+    <input id="field-0" name="Name" type="text" maxlength="200" required>
+    <label for="field-1">Email address (required)</label>
+    <input id="field-1" name="Email Address" type="email" maxlength="254" required>
+    <label for="field-2">Graduation year (required)</label>
+    <input id="field-2" name="Year of Graduation" type="text" maxlength="4" required>
+    <label for="field-3">Major or probable major (required)</label>
+    <input id="field-3" name="Major at Olin" type="text" maxlength="200" required>
+    <label for="field-4">Current time zone (required)</label>
+    <input id="field-4" name="What is your current time zone?" type="text" maxlength="100" required>
+    <label for="field-5">Interests</label>
+    <textarea id="field-5" name="My interests include..." maxlength="4000" rows="3"></textarea>
+    <label for="field-6">What would you like to get out of Banter?</label>
+    <textarea id="field-6" name="What do you want to get out of Banter?" maxlength="4000" rows="3"></textarea>
+    <label for="field-7">Olin activities</label>
+    <textarea id="field-7" name="At Olin I was involved in..." maxlength="4000" rows="3"></textarea>
+    <label for="field-8">Current activities</label>
+    <textarea id="field-8" name="These days I am spending time on..." maxlength="4000" rows="3"></textarea>
+    <label for="field-9">Recent professional position</label>
+    <textarea id="field-9" name="Recent Professional Position" maxlength="4000" rows="3"></textarea>
+    <label for="field-10">Experience you could share</label>
+    <textarea id="field-10" name="What interests and experiences do you have that you could share? " maxlength="4000" rows="3"></textarea>
+    <label for="field-11">Coolest project</label>
+    <textarea id="field-11" name="My coolest project was (or is)..." maxlength="4000" rows="3"></textarea>
+    <label for="field-12">Weekend activities</label>
+    <textarea id="field-12" name="On the weekends I like to..." maxlength="4000" rows="3"></textarea>
+    <label for="field-13">Recent good find</label>
+    <textarea id="field-13" name="My most recent &quot;good find&quot; was ..." maxlength="4000" rows="3"></textarea>
+    <label for="field-14">Where would you like to travel?</label>
+    <textarea id="field-14" name="If I could travel anywhere I would go to..." maxlength="4000" rows="3"></textarea>
+    <label for="field-15">Anything else your match should know?</label>
+    <textarea id="field-15" name="Anything else you want your match to know?" maxlength="4000" rows="3"></textarea>
+    <label for="preference">Mentors: who would you like to mentor?</label>
+    <select id="preference" name="I want my mentee to be...">
+      <option value="">Choose if signing up as a mentor</option>
+      <option>An Olin Student</option>
+      <option>A recent alum</option>
+      <option>Either (but only one mentee)</option>
+    </select>
+    <label for="choices">Mentees: which mentors would you be happy to banter with?</label>
+    <small id="choices-help">Use choices supplied by the organizers: Name---2020---Role, Name---2021---Role. For one mentor, their exact name is enough. Leave blank if you have not received choices yet; you will remain unmatched until organizers add your choices.</small>
+    <textarea id="choices" name="Which alumni would you be happy to banter with?" maxlength="4000" rows="3" aria-describedby="choices-help"></textarea>
+    <button id="submit" type="submit" disabled>Submit signup</button>
+    <p id="status" role="status" aria-live="polite" tabindex="-1"></p>
+    <p id="form-error" role="alert" tabindex="-1"></p>
+  </form>
+</main>
+<script type="module">
+  import { SUPABASE_URL, ANON_KEY, loadCycle } from '/resources/banter/js/banter.js';
+
+  const form = document.getElementById('signup-form');
+  const status = document.getElementById('status');
+  const errorBox = document.getElementById('form-error');
+  const button = document.getElementById('submit');
+  const cohort = document.getElementById('cohort');
+  const preference = document.getElementById('preference');
+  const closedNotice = document.getElementById('closed-notice');
+
+  const closedDetail = document.getElementById('closed-detail');
+
+  cohort.addEventListener('change', () => {
+    preference.required = cohort.value === 'mentor_alums';
+    checkGate();
+  });
+
+  // Prefill from the timeline's ?cohort= links (e.g. ?cohort=mentor_alums).
+  const preselect = new URLSearchParams(location.search).get('cohort');
+  if (preselect && cohort.querySelector(`option[value="${CSS.escape(preselect)}"]`)) {
+    cohort.value = preselect;
+    cohort.dispatchEvent(new Event('change'));
+  }
+
+  // Per-cohort deadline gate, keyed by whichever role is currently selected.
+  // submit-response (v3+) enforces the same window server-side; this is UX
+  // only, so a stale tab can't actually get past the real check. Fail open
+  // on a config-load error — don't block a legitimate applicant over an
+  // unrelated network hiccup; the server-side gate is unaffected either way.
+  let cycleData = null;
+
+  function checkGate() {
+    const role = cohort.value;
+    if (!role || !cycleData) {
+      form.hidden = false;
+      closedNotice.style.display = 'none';
+      return true;
+    }
+    const d = cycleData.deadlines?.[role];
+    if (!d) {
+      form.hidden = false;
+      closedNotice.style.display = 'none';
+      return true;
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    const isOpen = (!d.open || today >= d.open) && (!d.close || today <= d.close);
+    form.hidden = !isOpen;
+    closedNotice.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) {
+      closedDetail.textContent = (d.close && today > d.close)
+        ? `This deadline closed on ${d.close}.`
+        : `This opens ${d.open}.`;
+    }
+    return isOpen;
+  }
+
+  loadCycle().then((cycle) => {
+    cycleData = cycle;
+    checkGate();
+  }).catch(() => {});
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!checkGate()) return;
+    if (!form.reportValidity()) return;
+    errorBox.textContent = '';
+    const data = new FormData(form);
+    const raw = {};
+    for (const [key, value] of data) {
+      if (key !== 'cohort') raw[key] = value.trim();
+    }
+    if (!raw.Name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw['Email Address'])) {
+      errorBox.textContent = 'Enter your name and a valid email address.';
+      errorBox.focus();
+      return;
+    }
+    const body = JSON.stringify({ cohort: data.get('cohort'), raw });
+    if (new TextEncoder().encode(body).length > 32768) {
+      errorBox.textContent = 'Your response is too long. Please shorten the text fields.';
+      errorBox.focus();
+      return;
+    }
+    button.disabled = true;
+    status.textContent = 'Submitting your signup…';
+    try {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/submit-response`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: ANON_KEY,
+          Authorization: `Bearer ${ANON_KEY}`,
+        },
+        body,
+        signal: AbortSignal.timeout(20000),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) {
+        status.textContent = '';
+        errorBox.textContent = result.error
+          || 'We could not confirm your signup. Your entries are still here. Please try again, or contact the organizers if this continues.';
+        errorBox.focus();
+        return;
+      }
+      status.textContent = 'Thank you. Your signup has been received. If you submitted before, your original response is kept. Contact the organizers for changes.';
+      form.reset();
+      preference.required = false;
+      status.focus();
+    } catch {
+      status.textContent = '';
+      errorBox.textContent = 'We could not confirm your signup. Your entries are still here. Please try again, or contact the organizers if this continues.';
+      errorBox.focus();
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  button.disabled = false;
+</script>
+</body>
+</html>

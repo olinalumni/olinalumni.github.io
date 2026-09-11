@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mentor profiles · Banter · Olin Alumni</title>
+  <link rel="shortcut icon" href="/img/favicon.ico">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #172d3b; background: #faf9f6; font: 1rem/1.6 system-ui, sans-serif; }
+    main { max-width: 42rem; margin: 3rem auto; padding: 0 1.25rem 3rem; }
+    h1 { font-size: 2.3rem; line-height: 1.2; }
+    a.back { display: inline-block; margin-bottom: 1rem; color: #174b66; }
+    ul#deck-list { list-style: none; padding: 0; margin: 1.5rem 0; }
+    ul#deck-list li { margin-bottom: .75rem; }
+    a.deck-link { display: block; padding: .9rem 1rem; border: 1px solid #71818a; border-radius: .25rem;
+      color: #172d3b; text-decoration: none; background: white; }
+    a.deck-link:hover { background: #f2f2f2; }
+    a.deck-link .audience { display: block; font-size: .85rem; color: #5a6b74; margin-top: .15rem; }
+    #status { min-height: 1.5rem; }
+    #empty, #error { display: none; }
+  </style>
+</head>
+<body>
+<main>
+  <a class="back" href="/resources/banter/">&larr; Back to Banter</a>
+  <h1>Mentor profiles</h1>
+  <p>Browse the mentors available this cycle before you pick who you'd like to be matched with.</p>
+
+  <p id="status" role="status" aria-live="polite">Loading mentor profiles&hellip;</p>
+  <ul id="deck-list" aria-live="polite"></ul>
+
+  <p id="empty">No mentor profiles are published yet. Check back after mentor profiles go public, or email
+    <a href="mailto:banter@olin.edu">banter@olin.edu</a>.</p>
+
+  <p id="error" role="alert">
+    <strong>We couldn't load mentor profiles just now.</strong>
+    Please try reloading, or email <a href="mailto:banter@olin.edu">banter@olin.edu</a> and we'll send them to you.
+    <details><summary>Technical details</summary><code id="error-detail"></code></details>
+  </p>
+</main>
+<script type="module">
+  import { SUPABASE_URL, ANON_KEY } from '/resources/banter/js/banter.js';
+
+  const status = document.getElementById('status');
+  const list = document.getElementById('deck-list');
+  const empty = document.getElementById('empty');
+  const errorBox = document.getElementById('error');
+
+  const cohort = new URLSearchParams(location.search).get('cohort');
+  // Mentee cohorts map straight onto the function's `audience` field;
+  // a mentor visiting this page (or no cohort at all) sees everything.
+  const audience = cohort === 'students' || cohort === 'young_alums' ? cohort : null;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/mentor-decks`, {
+      headers: { apikey: ANON_KEY, Authorization: `Bearer ${ANON_KEY}` },
+    });
+    if (!res.ok) throw new Error(`Supabase ${res.status}`);
+    const body = await res.json();
+    const decks = (body.decks || []).filter((d) => !audience || d.audience === audience);
+
+    status.hidden = true;
+    if (!decks.length) {
+      empty.style.display = 'block';
+    } else {
+      for (const d of decks) {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.className = 'deck-link';
+        a.href = d.url;
+        a.download = '';
+        a.textContent = d.name;
+        const span = document.createElement('span');
+        span.className = 'audience';
+        span.textContent = d.audience === 'students' ? 'For current students'
+          : d.audience === 'young_alums' ? 'For recent alumni' : d.audience;
+        a.appendChild(span);
+        li.appendChild(a);
+        list.appendChild(li);
+      }
+    }
+  } catch (err) {
+    status.hidden = true;
+    errorBox.style.display = 'block';
+    document.getElementById('error-detail').textContent = String(err);
+  }
+</script>
+</body>
+</html>

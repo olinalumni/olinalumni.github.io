@@ -16,7 +16,9 @@ Running locally
 ---------------
 Since it's just a static app, you can serve the files really easily
 
-- `python -m SimpleHTTPServer`
+- `python3 -m http.server 8000` (the old `python -m SimpleHTTPServer` is Python 2, which no longer ships with macOS)
+
+Some pages (`resources/banter/`) load ES modules and fetch from Supabase, which requires serving over `http://`, not opening the file directly — run the command above from the repo root and visit `http://localhost:8000/`.
 
 Submitting changes
 ------------------
