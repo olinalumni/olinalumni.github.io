@@ -762,22 +762,30 @@
         results.appendChild(li);
         continue;
       }
+      // Reset the review flag BEFORE uploading the new file, not after. If
+      // this write fails, the old, still-approved file in storage is
+      // untouched -- the safe failure direction. Uploading first and
+      // resetting after risks the opposite: new, unreviewed content left
+      // marked approved and publicly visible if the second request fails.
+      const { error: dbError } = await sb.from('deck_publications')
+        .update({ approved: false, approved_at: null, generated_at: new Date().toISOString() })
+        .eq('id', match.id);
+      if (dbError) {
+        li.textContent = `${file.name}: couldn't start the import (${dbError.message}). Nothing was changed.`;
+        results.appendChild(li);
+        continue;
+      }
       const { error: uploadError } = await sb.storage.from('banter-decks')
         .update(match.object_path, file, {
           upsert: true,
           contentType: file.type || 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
         });
       if (uploadError) {
-        li.textContent = `${file.name}: couldn't import (${uploadError.message}).`;
+        li.textContent = `${file.name}: marked for review, but the file upload failed (${uploadError.message}). Try importing again.`;
         results.appendChild(li);
         continue;
       }
-      const { error: dbError } = await sb.from('deck_publications')
-        .update({ approved: false, approved_at: null, generated_at: new Date().toISOString() })
-        .eq('id', match.id);
-      li.textContent = dbError
-        ? `${file.name}: file replaced, but couldn't reset review status (${dbError.message}).`
-        : `${file.name}: replaced ${match.object_path}, needs re-approval.`;
+      li.textContent = `${file.name}: replaced ${match.object_path}, needs re-approval.`;
       results.appendChild(li);
       replaced++;
     }
@@ -955,8 +963,23 @@
       ? await sb.from('matches').upsert(parsed, { onConflict: 'mentee' })
       : { error: null };
     if (upsertError) { status.textContent = `Couldn't write matches: ${upsertError.message}`; return; }
+
+    // Read the CURRENT mentee set right before deciding what's stale,
+    // instead of the in-memory `matches` array from the last page load.
+    // That snapshot can predate a concurrent matching run or another
+    // admin's edit; acting on it could leave an unintended row untouched
+    // (or delete one someone else just added). This still isn't a single
+    // atomic transaction -- a row written in the instant between this read
+    // and the delete below could still slip through -- but it shrinks the
+    // race window from "however long the tab's been open" to one round trip.
     const keepIds = new Set(parsed.map((p) => p.mentee));
-    const staleIds = matches.map((m) => m.mentee).filter((id) => !keepIds.has(id));
+    const { data: currentRows, error: currentError } = await sb.from('matches').select('mentee');
+    if (currentError) {
+      status.textContent = `Saved the new matches, but couldn't check for rows to remove: ${currentError.message}`;
+      loadMatches();
+      return;
+    }
+    const staleIds = currentRows.map((m) => m.mentee).filter((id) => !keepIds.has(id));
     if (staleIds.length) {
       const { error: delError } = await sb.from('matches').delete().in('mentee', staleIds);
       if (delError) {
