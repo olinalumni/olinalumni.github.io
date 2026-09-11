@@ -26,14 +26,21 @@
     button.remove { background: #a00; }
     table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
     th, td { border: 1px solid #cbcbcb; padding: .4rem .6rem; text-align: left; vertical-align: top; }
-    th { background: #e0e0e0; }
+    th { background: #e0e0e0; position: sticky; top: 0; z-index: 1; }
+    pre { white-space: pre-wrap; word-break: break-word; max-width: 36rem; margin: 0; }
     .row-inline { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
     .row-inline input { flex: 1 1 8rem; }
     #login-panel input[type=email] { width: 20rem; max-width: 100%; }
     #not-authorized { background: #fff3e0; border: 1px solid #d98c00; border-radius: .25rem; padding: 1rem; }
-    #save-status, #login-status { min-height: 1.5rem; }
+    #save-status, #login-status, #decks-status, #decks-pipeline-status, #matches-status, #matching-pipeline-status { min-height: 1.5rem; }
     #save-status.error { color: #a00; font-weight: 600; }
-    .table-responsive { overflow-x: auto; }
+    .table-responsive { overflow-x: auto; cursor: grab; scrollbar-width: thin; }
+    .table-responsive:active { cursor: grabbing; }
+    .table-responsive::-webkit-scrollbar { height: 10px; }
+    .table-responsive::-webkit-scrollbar-thumb { background: #b7c0c4; border-radius: 5px; }
+    .table-responsive.responses-scroll { max-height: 26rem; overflow-y: auto; }
+    .deck-row.pending { background: #fff8e1; }
+    .deck-row.approved { background: #eefbea; }
     [hidden] { display: none !important; }
     #filters { margin-top: 1rem; display: flex; gap: .75rem; flex-wrap: wrap; align-items: center; }
   </style>
@@ -109,6 +116,41 @@
       </div>
     </div>
 
+    <h2>Mentor decks</h2>
+    <p>Generate profile decks after the mentor deadline closes, then review each one before it becomes visible
+      to mentees. Regenerating a deck resets its approval — a content change always gets re-reviewed.</p>
+    <p class="row-inline">
+      <button id="generate-decks" type="button">Generate mentor decks</button>
+    </p>
+    <p id="decks-pipeline-status" role="status" aria-live="polite"></p>
+    <p id="decks-status" role="status" aria-live="polite"></p>
+    <div class="table-responsive">
+      <table id="decks-table">
+        <thead>
+          <tr><th>Deck</th><th>Cohort</th><th>Audience</th><th>Generated</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <h2>Matches</h2>
+    <p>Run matching in review mode first, check the results below, then run again with emails on when you're
+      ready to notify people.</p>
+    <p class="row-inline">
+      <label style="margin:0"><input type="checkbox" id="send-emails" style="width:auto;padding:0"> Send match announcement emails</label>
+      <button id="run-matching" type="button">Run matching</button>
+    </p>
+    <p id="matching-pipeline-status" role="status" aria-live="polite"></p>
+    <p id="matches-status" role="status" aria-live="polite"></p>
+    <div class="table-responsive">
+      <table id="matches-table">
+        <thead>
+          <tr><th>Mentor</th><th>Mentee</th><th>Cohort</th><th>Score</th><th>Matched</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
     <h2>Applications</h2>
     <div id="filters">
       <label style="margin:0" for="filter-cohort">Cohort</label>
@@ -124,7 +166,7 @@
       <button id="export-csv" type="button" class="secondary">Export CSV</button>
     </div>
     <p id="responses-status" role="status" aria-live="polite"></p>
-    <div class="table-responsive">
+    <div class="table-responsive responses-scroll">
       <table id="responses-table">
         <thead>
           <tr>
@@ -383,9 +425,156 @@
     renderResponses();
   }
 
+  // --- Pipeline dispatch (GitHub Actions, proxied through dispatch-workflow) -
+
+  async function dispatchWorkflow(workflow, send_emails) {
+    const { data: { session } } = await sb.auth.getSession();
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/dispatch-workflow`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workflow, send_emails }),
+      });
+      const body = await res.json().catch(() => ({}));
+      return { ok: res.ok, body };
+    } catch (err) {
+      return { ok: false, body: { error: String(err) } };
+    }
+  }
+
+  // --- Mentor decks -----------------------------------------------------
+
+  let decks = [];
+
+  async function loadDecks() {
+    const status = document.getElementById('decks-status');
+    status.textContent = 'Loading…';
+    const { data, error } = await sb.from('deck_publications').select('*').order('generated_at', { ascending: false });
+    if (error) { status.textContent = `Couldn't load decks: ${error.message}`; return; }
+    decks = data;
+    renderDecks();
+  }
+
+  function renderDecks() {
+    const tbody = document.querySelector('#decks-table tbody');
+    tbody.innerHTML = '';
+    for (const d of decks) {
+      const tr = document.createElement('tr');
+      tr.className = d.approved ? 'deck-row approved' : 'deck-row pending';
+      const cells = [
+        d.display_name || d.object_path, d.cohort, d.audience,
+        d.generated_at ? new Date(d.generated_at).toLocaleString() : '',
+        d.approved ? `Approved ${d.approved_at ? new Date(d.approved_at).toLocaleDateString() : ''}` : 'Pending review',
+      ];
+      for (const c of cells) {
+        const td = document.createElement('td');
+        td.textContent = c || '';
+        tr.appendChild(td);
+      }
+      const actionTd = document.createElement('td');
+      const previewBtn = document.createElement('button');
+      previewBtn.type = 'button';
+      previewBtn.className = 'secondary';
+      previewBtn.textContent = 'Preview';
+      previewBtn.addEventListener('click', async () => {
+        const { data: signed, error } = await sb.storage.from('banter-decks').createSignedUrl(d.object_path, 300);
+        if (error) { alert(`Couldn't open preview: ${error.message}`); return; }
+        window.open(signed.signedUrl, '_blank');
+      });
+      actionTd.appendChild(previewBtn);
+      if (!d.approved) {
+        const approveBtn = document.createElement('button');
+        approveBtn.type = 'button';
+        approveBtn.textContent = 'Approve';
+        approveBtn.style.marginLeft = '.5rem';
+        approveBtn.addEventListener('click', async () => {
+          const { error } = await sb.from('deck_publications')
+            .update({ approved: true, approved_at: new Date().toISOString() })
+            .eq('id', d.id);
+          if (error) { alert(`Couldn't approve: ${error.message}`); return; }
+          loadDecks();
+        });
+        actionTd.appendChild(approveBtn);
+      }
+      tr.appendChild(actionTd);
+      tbody.appendChild(tr);
+    }
+    document.getElementById('decks-status').textContent =
+      `${decks.length} deck${decks.length === 1 ? '' : 's'}, ${decks.filter((d) => !d.approved).length} pending review.`;
+  }
+
+  document.getElementById('generate-decks').addEventListener('click', async () => {
+    const status = document.getElementById('decks-pipeline-status');
+    status.textContent = 'Starting…';
+    const { ok, body } = await dispatchWorkflow('generate-mentor-decks.yml');
+    status.textContent = ok
+      ? 'Started. Refresh in a few minutes to see new decks below.'
+      : `Couldn't start: ${body.error || 'unknown error'}`;
+  });
+
+  // --- Matches ------------------------------------------------------------
+
+  async function loadMatches() {
+    const status = document.getElementById('matches-status');
+    status.textContent = 'Loading…';
+    const { data: matchRows, error } = await sb.from('matches').select('*').order('created_at', { ascending: false });
+    if (error) { status.textContent = `Couldn't load matches: ${error.message}`; return; }
+    const ids = [...new Set(matchRows.flatMap((m) => [m.mentor, m.mentee]))];
+    const { data: people } = ids.length
+      ? await sb.from('survey_responses').select('id,name,email').in('id', ids)
+      : { data: [] };
+    const byId = Object.fromEntries((people || []).map((p) => [p.id, p]));
+    const tbody = document.querySelector('#matches-table tbody');
+    tbody.innerHTML = '';
+    for (const m of matchRows) {
+      const tr = document.createElement('tr');
+      const cells = [
+        byId[m.mentor]?.name || m.mentor,
+        byId[m.mentee]?.name || m.mentee,
+        m.cohort,
+        typeof m.score === 'number' ? m.score.toFixed(2) : m.score,
+        m.created_at ? new Date(m.created_at).toLocaleString() : '',
+      ];
+      for (const c of cells) {
+        const td = document.createElement('td');
+        td.textContent = c || '';
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+    status.textContent = `${matchRows.length} match${matchRows.length === 1 ? '' : 'es'}.`;
+  }
+
+  document.getElementById('run-matching').addEventListener('click', async () => {
+    const sendEmails = document.getElementById('send-emails').checked;
+    if (sendEmails && !confirm('This will email every matched pair announcing their match. Are you sure?')) return;
+    const status = document.getElementById('matching-pipeline-status');
+    status.textContent = 'Starting…';
+    const { ok, body } = await dispatchWorkflow('run-matching.yml', sendEmails);
+    status.textContent = ok
+      ? 'Started. Refresh in a few minutes to see results below.'
+      : `Couldn't start: ${body.error || 'unknown error'}`;
+  });
+
+  // --- Drag-to-scroll for wide tables (mouse users don't get trackpad swipe) -
+
+  for (const el of document.querySelectorAll('.table-responsive')) {
+    let dragging = false, startX = 0, startLeft = 0;
+    el.addEventListener('mousedown', (e) => {
+      dragging = true; startX = e.pageX; startLeft = el.scrollLeft;
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      el.scrollLeft = startLeft - (e.pageX - startX);
+    });
+    window.addEventListener('mouseup', () => { dragging = false; });
+  }
+
   function loadDashboard() {
     loadCycleIntoEditor();
     loadResponses();
+    loadDecks();
+    loadMatches();
   }
 </script>
 </body>
