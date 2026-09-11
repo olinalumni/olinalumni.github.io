@@ -150,6 +150,23 @@
         <tbody></tbody>
       </table>
     </div>
+    <p class="row-inline">
+      <button id="download-all-decks" type="button" class="secondary">Download all decks</button>
+    </p>
+
+    <h3>Import edited decks</h3>
+    <p>Found a mistake in a deck? Download it above, fix it in PowerPoint or Keynote, then select the corrected
+      file(s) here to replace them.</p>
+    <p><strong>Each file's name must exactly match the name of the deck you downloaded</strong> — files are
+      matched by filename only. A file that doesn't match an existing deck is skipped, not guessed at; new decks
+      only come from "Generate mentor decks" above. Importing a deck resets its approval, same as regenerating it.</p>
+    <input id="import-decks-input" type="file" multiple
+      accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
+    <p class="row-inline">
+      <button id="import-decks-btn" type="button">Import selected files</button>
+    </p>
+    <p id="import-status" role="status" aria-live="polite"></p>
+    <ul id="import-results"></ul>
 
     <h2>Matches</h2>
     <p>Run matching in review mode first, check the results below, then run again with emails on when you're
@@ -550,6 +567,73 @@
     document.getElementById('decks-status').textContent =
       `${decks.length} deck${decks.length === 1 ? '' : 's'}, ${decks.filter((d) => !d.approved).length} pending review.`;
   }
+
+  document.getElementById('download-all-decks').addEventListener('click', async () => {
+    const status = document.getElementById('decks-status');
+    if (!decks.length) { status.textContent = 'No decks to download.'; return; }
+    status.textContent = `Downloading ${decks.length} deck(s)…`;
+    for (const d of decks) {
+      const { data: signed, error } = await sb.storage.from('banter-decks').createSignedUrl(d.object_path, 300);
+      if (error) continue;
+      const a = document.createElement('a');
+      a.href = signed.signedUrl;
+      a.download = d.object_path.split('/').pop();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // Browsers throttle/drop near-simultaneous downloads from one click.
+      await new Promise((r) => setTimeout(r, 400));
+    }
+    status.textContent = `Started ${decks.length} download(s).`;
+  });
+
+  document.getElementById('import-decks-btn').addEventListener('click', async () => {
+    const input = document.getElementById('import-decks-input');
+    const files = [...input.files];
+    const status = document.getElementById('import-status');
+    const results = document.getElementById('import-results');
+    results.innerHTML = '';
+    if (!files.length) { status.textContent = 'Choose one or more .pptx files first.'; return; }
+    status.textContent = `Importing ${files.length} file(s)…`;
+
+    // Match by the trailing filename, not the full storage path -- that's
+    // all a browser download preserves, and admins never see or edit the
+    // cohort-prefixed object_path itself.
+    const byName = new Map(decks.map((d) => [d.object_path.split('/').pop(), d]));
+
+    let replaced = 0, skipped = 0;
+    for (const file of files) {
+      const li = document.createElement('li');
+      const match = byName.get(file.name);
+      if (!match) {
+        li.textContent = `${file.name}: no matching deck, skipped.`;
+        skipped++;
+        results.appendChild(li);
+        continue;
+      }
+      const { error: uploadError } = await sb.storage.from('banter-decks')
+        .update(match.object_path, file, {
+          upsert: true,
+          contentType: file.type || 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        });
+      if (uploadError) {
+        li.textContent = `${file.name}: couldn't import (${uploadError.message}).`;
+        results.appendChild(li);
+        continue;
+      }
+      const { error: dbError } = await sb.from('deck_publications')
+        .update({ approved: false, approved_at: null, generated_at: new Date().toISOString() })
+        .eq('id', match.id);
+      li.textContent = dbError
+        ? `${file.name}: file replaced, but couldn't reset review status (${dbError.message}).`
+        : `${file.name}: replaced ${match.object_path}, needs re-approval.`;
+      results.appendChild(li);
+      replaced++;
+    }
+    status.textContent = `${replaced} replaced, ${skipped} skipped.`;
+    input.value = '';
+    loadDecks();
+  });
 
   document.getElementById('generate-decks').addEventListener('click', async () => {
     const status = document.getElementById('decks-pipeline-status');
