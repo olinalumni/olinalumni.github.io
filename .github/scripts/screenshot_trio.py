@@ -2,12 +2,19 @@
 """Generate before/after/diff screenshots for a frontend change.
 
 Serves the base ref and the working tree on local HTTP servers, screenshots
-each page with headless Chrome, and writes a pixel diff. Output lands in
-.github/screenshots/<branch>/<page>-{before,after,diff}.png and a Markdown
-table is printed for pasting into the PR description.
+each page with headless Chrome, and writes a diff that ignores content which
+only moved. Images go to .github/screenshots/<branch>/, which is gitignored,
+so they never land in the PR itself.
+
+With --publish, every image in that folder is committed to an evidence branch,
+evidence/<branch>, and pushed. The PR branch and working tree are not touched.
+A Markdown table with links pinned to the evidence commit is printed for
+pasting into the PR description. Extra images you drop into the folder, such
+as phone-width captures, are published too.
 
 Usage:
-  python3 .github/scripts/screenshot_trio.py [--base master] [--page /]... [--width 1280]
+  python3 .github/scripts/screenshot_trio.py [--page /]... [--base master] [--publish]
+  python3 .github/scripts/screenshot_trio.py --no-capture --publish
 
 Requires Google Chrome (or set CHROME=/path/to/chrome), Pillow, and numpy
 (`python3 -m pip install pillow numpy`).
@@ -16,6 +23,7 @@ import argparse
 import difflib
 import hashlib
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -218,12 +226,52 @@ def slug(page):
     return s or "home"
 
 
+def origin_repo():
+    """owner/name of the origin remote, for raw.githubusercontent.com links."""
+    url = git("remote", "get-url", "origin")
+    m = re.search(r"github\.com[:/]([^/]+/[^/]+?)(?:\.git)?$", url)
+    if not m:
+        sys.exit(f"origin is not a GitHub remote: {url}")
+    return m.group(1)
+
+
+def publish(out_dir, branch):
+    """Commit every file in out_dir to evidence/<branch> and push it.
+
+    Uses git plumbing against a throwaway index, so the working tree, the
+    real index, and the current branch are left alone. Each publish adds a
+    commit on top of the evidence branch, so older links stay valid.
+    """
+    ref = f"evidence/{branch}"
+    files = sorted(f for f in os.listdir(out_dir) if not f.startswith("."))
+    if not files:
+        sys.exit(f"nothing to publish in {out_dir}")
+    subprocess.run(["git", "fetch", "--quiet", "origin", f"+refs/heads/{ref}:refs/remotes/origin/{ref}"],
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    parent = subprocess.run(["git", "rev-parse", "--verify", "--quiet", f"refs/remotes/origin/{ref}"],
+                            capture_output=True, text=True).stdout.strip()
+    env = dict(os.environ, GIT_INDEX_FILE=os.path.join(tempfile.mkdtemp(prefix="evidence-index-"), "index"))
+    for f in files:
+        blob = git("hash-object", "-w", os.path.join(out_dir, f))
+        subprocess.run(["git", "update-index", "--add", "--cacheinfo", f"100644,{blob},{f}"], env=env, check=True)
+    tree = subprocess.check_output(["git", "write-tree"], env=env, text=True).strip()
+    head = git("rev-parse", "--short", "HEAD")
+    cmd = ["git", "commit-tree", tree, "-m", f"Screenshots for {branch} at {head}"]
+    if parent:
+        cmd[3:3] = ["-p", parent]
+    commit = subprocess.check_output(cmd, text=True).strip()
+    subprocess.run(["git", "push", "--quiet", "origin", f"{commit}:refs/heads/{ref}"], check=True)
+    return ref, commit, files
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--base", default="master", help="git ref to screenshot as 'before' (default: master)")
     ap.add_argument("--page", action="append", default=[], help="page path to capture, repeatable (default: /)")
     ap.add_argument("--width", type=int, default=1280, help="viewport width in px (default: 1280)")
     ap.add_argument("--out", default=None, help="output dir (default: .github/screenshots/<branch>)")
+    ap.add_argument("--publish", action="store_true", help="push the images to evidence/<branch> and print PR Markdown")
+    ap.add_argument("--no-capture", action="store_true", help="skip capturing; use with --publish for images already in the folder")
     args = ap.parse_args()
     pages = args.page or ["/"]
 
@@ -232,41 +280,44 @@ def main():
     branch = git("rev-parse", "--abbrev-ref", "HEAD")
     out_dir = args.out or os.path.join(".github", "screenshots", branch.replace("/", "-"))
     os.makedirs(out_dir, exist_ok=True)
-    out_dir = os.path.relpath(out_dir, root) if os.path.isabs(out_dir) and out_dir.startswith(root) else out_dir
-    chrome = find_chrome()
 
-    base_dir = tempfile.mkdtemp(prefix="screenshot-base-")
-    procs = []
-    try:
-        git("worktree", "add", "--detach", "--quiet", base_dir, args.base)
-        procs.append(serve(base_dir, 8781))
-        procs.append(serve(root, 8782))
-        time.sleep(1)
-        rows = []
-        for page in pages:
-            name = slug(page)
-            before_p = os.path.join(out_dir, f"{name}-before.png")
-            after_p = os.path.join(out_dir, f"{name}-after.png")
-            diff_p = os.path.join(out_dir, f"{name}-diff.png")
-            screenshot(chrome, f"http://127.0.0.1:8781{page}", before_p, args.width)
-            screenshot(chrome, f"http://127.0.0.1:8782{page}", after_p, args.width)
-            before = trim_bottom(before_p)
-            after = trim_bottom(after_p)
-            pct = make_diff(before, after, diff_p)
-            rows.append((page, before_p, after_p, diff_p, pct))
-            print(f"{page}: {pct:.2f}% of pixels changed or removed -> {out_dir}/{name}-{{before,after,diff}}.png", file=sys.stderr)
-    finally:
-        for p in procs:
-            p.terminate()
-        subprocess.run(["git", "worktree", "remove", "--force", base_dir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if not args.no_capture:
+        chrome = find_chrome()
+        base_dir = tempfile.mkdtemp(prefix="screenshot-base-")
+        procs = []
+        try:
+            git("worktree", "add", "--detach", "--quiet", base_dir, args.base)
+            procs.append(serve(base_dir, 8781))
+            procs.append(serve(root, 8782))
+            time.sleep(1)
+            for page in pages:
+                name = slug(page)
+                before_p = os.path.join(out_dir, f"{name}-before.png")
+                after_p = os.path.join(out_dir, f"{name}-after.png")
+                diff_p = os.path.join(out_dir, f"{name}-diff.png")
+                screenshot(chrome, f"http://127.0.0.1:8781{page}", before_p, args.width)
+                screenshot(chrome, f"http://127.0.0.1:8782{page}", after_p, args.width)
+                pct = make_diff(trim_bottom(before_p), trim_bottom(after_p), diff_p)
+                print(f"{page}: {pct:.2f}% of pixels changed or removed -> {out_dir}/{name}-{{before,after,diff}}.png", file=sys.stderr)
+        finally:
+            for p in procs:
+                p.terminate()
+            subprocess.run(["git", "worktree", "remove", "--force", base_dir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    print("\nCommit the images, then paste this into the PR (replace <sha> with that commit):\n")
-    raw = "https://raw.githubusercontent.com/olinalumni/olinalumni.github.io/<sha>/"
-    for page, b, a, d, pct in rows:
-        print(f"### `{page}`\n")
-        print("| Before | After | Diff |")
-        print("| --- | --- | --- |")
-        print(f"| ![before]({raw}{b}) | ![after]({raw}{a}) | ![diff]({raw}{d}) |\n")
+    if not args.publish:
+        print(f"\nReview the images in {out_dir}, then rerun with --publish (add --no-capture to reuse them).", file=sys.stderr)
+        return
+
+    ref, commit, files = publish(out_dir, branch)
+    raw = f"https://raw.githubusercontent.com/{origin_repo()}/{commit}/"
+    print(f"\nPushed {len(files)} images to {ref} at {commit[:7]}. Paste this into the PR:\n", file=sys.stderr)
+    trios = sorted({f[:-len(s)] for f in files for s in ("-before.png", "-after.png", "-diff.png") if f.endswith(s)})
+    for name in trios:
+        cells = [f"![{k}]({raw}{name}-{k}.png)" if f"{name}-{k}.png" in files else "" for k in ("before", "after", "diff")]
+        print(f"### `{name}`\n\n| Before | After | Diff |\n| --- | --- | --- |\n| {' | '.join(cells)} |\n")
+    for f in files:
+        if not any(f.startswith(n + "-") and f[len(n) + 1:] in ("before.png", "after.png", "diff.png") for n in trios):
+            print(f"![{f}]({raw}{f})\n")
 
 
 if __name__ == "__main__":

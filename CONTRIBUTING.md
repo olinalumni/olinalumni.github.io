@@ -26,7 +26,7 @@ Run the script from the repo root on your branch. It needs Google Chrome and
 the Pillow and numpy Python packages (`python3 -m pip install pillow numpy`).
 
 ```
-python3 .github/scripts/screenshot_trio.py
+python3 .github/scripts/screenshot_trio.py [--publish]
 ```
 
 By default it captures `/` against `master`. Pass `--page` once per affected
@@ -36,9 +36,8 @@ page and `--base` to compare against something other than `master`:
 python3 .github/scripts/screenshot_trio.py --page / --page /resources/banter/
 ```
 
-Images are written to `.github/screenshots/<branch>/`. Commit them on your
-branch. They are not published to the site because GitHub Pages skips
-directories that start with a dot.
+Images are written to `.github/screenshots/<branch>/`, which is gitignored.
+Look them over, especially the diff. Screenshots never go in the PR itself.
 
 The script blocks a few asynchronous third-party embeds (Twitter follow
 buttons, the Facebook SDK, analytics) so two captures of the same tree are
@@ -47,11 +46,23 @@ screenshots.
 
 ### Adding the trio to the PR
 
-The script prints a Markdown table. Paste it into the **Screenshots** section
-of the PR description and replace `<sha>` with the hash of the commit that
-added the images, so the links keep working after the branch is deleted.
+Screenshots live on a separate evidence branch, `evidence/<your-branch>`, so
+the PR diff stays limited to the actual change. Publish them with:
 
-If you would rather not commit images, drag the three files into the PR
+```
+python3 .github/scripts/screenshot_trio.py --no-capture --publish
+```
+
+That commits every image in `.github/screenshots/<branch>/` to the evidence
+branch and pushes it, without touching your working tree or PR branch. It
+prints Markdown with links pinned to the evidence commit. Paste that into the
+**Screenshots** section of the PR description. Any extra images you put in the
+folder, such as phone-width captures, are published and linked too.
+
+Rerunning publish adds a new commit to the evidence branch, so links in older
+PR descriptions keep working. Don't delete evidence branches after merging.
+
+If you'd rather not push a branch, drag the three files into the PR
 description on GitHub instead. Either way, aim to show all three.
 
 ## Branches
