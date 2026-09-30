@@ -6,9 +6,9 @@
 
 <!--
 Please include these for any change a visitor can see. Generate with:
-  python3 .github/scripts/screenshot_trio.py --page /
-Commit the images under .github/screenshots/<branch>/, then paste the table
-the script prints here with <sha> replaced. See CONTRIBUTING.md.
+  python3 .github/scripts/screenshot_trio.py --page / --publish
+That pushes the images to an evidence/<branch> branch, not this PR, and
+prints the table to paste here. See CONTRIBUTING.md.
 Delete this section if the PR touches no rendered files.
 -->
 
