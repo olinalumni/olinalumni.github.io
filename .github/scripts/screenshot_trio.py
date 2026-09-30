@@ -13,6 +13,8 @@ Requires Google Chrome (or set CHROME=/path/to/chrome) and Pillow
 (`python3 -m pip install pillow`).
 """
 import argparse
+import difflib
+import hashlib
 import os
 import shutil
 import subprocess
@@ -96,27 +98,60 @@ def pad_to(im, size):
     return out
 
 
+def row_hashes(im):
+    data, stride = im.tobytes(), im.width * 3
+    return [hashlib.md5(data[i * stride:(i + 1) * stride]).digest() for i in range(im.height)]
+
+
 def make_diff(before, after, out):
-    size = (max(before.width, after.width), max(before.height, after.height))
-    b, a = pad_to(before, size), pad_to(after, size)
-    mask = ImageChops.difference(a, b).convert("L").point(lambda v: 255 if v > 16 else 0)
-    changed = sum(1 for v in mask.getdata() if v)
-    total = size[0] * size[1]
-    if changed == 0:
-        base = a.convert("L").convert("RGB")
-        base.save(out)
+    """Highlight changed content in `after`, ignoring vertical shifts.
+
+    Rows are aligned with a sequence match on per-row hashes, so content that
+    only moved because something above it grew or shrank is left alone.
+    Inserted rows get a red tint, replaced rows get a per-pixel diff, and a
+    removed block is marked with a thin red bar at the point it was removed.
+    """
+    width = max(before.width, after.width)
+    b, a = pad_to(before, (width, before.height)), pad_to(after, (width, after.height))
+    ops = difflib.SequenceMatcher(None, row_hashes(b), row_hashes(a), autojunk=False).get_opcodes()
+
+    mask = Image.new("L", a.size, 0)          # per-pixel changes
+    tint = Image.new("L", a.size, 0)          # inserted rows
+    bars = []                                 # y positions of removed blocks
+    boxes = []
+    changed = 0
+    for tag, i1, i2, j1, j2 in ops:
+        if tag == "equal":
+            continue
+        if tag == "replace" and (i2 - i1) == (j2 - j1):
+            region = ImageChops.difference(a.crop((0, j1, width, j2)), b.crop((0, i1, width, i2)))
+            region = region.convert("L").point(lambda v: 255 if v > 16 else 0)
+            mask.paste(region, (0, j1))
+            changed += sum(1 for v in region.getdata() if v)
+            boxes.append((0, j1, width - 1, j2 - 1))
+            continue
+        if j2 > j1:                           # rows only in after (insert, or uneven replace)
+            tint.paste(255, (0, j1, width, j2))
+            changed += (j2 - j1) * width
+            boxes.append((0, j1, width - 1, j2 - 1))
+        if i2 > i1:                           # rows only in before
+            bars.append(j1)
+            boxes.append((0, max(0, j1 - 3), width - 1, min(a.height - 1, j1 + 3)))
+
+    faded = Image.blend(a.convert("L").convert("RGB"), Image.new("RGB", a.size, "white"), 0.55)
+    if changed == 0 and not bars:
+        faded.save(out)
         return 0.0
-    halo = mask.filter(ImageFilter.MaxFilter(9))
-    faded = Image.blend(a.convert("L").convert("RGB"), Image.new("RGB", size, "white"), 0.55)
-    red = Image.new("RGB", size, (220, 30, 30))
-    diff = Image.composite(red, faded, halo)
-    box = halo.getbbox()
-    ImageDraw.Draw(diff).rectangle(
-        (max(0, box[0] - 12), max(0, box[1] - 12), min(size[0] - 1, box[2] + 12), min(size[1] - 1, box[3] + 12)),
-        outline=(220, 30, 30), width=4,
-    )
+    red = Image.new("RGB", a.size, (220, 30, 30))
+    diff = Image.composite(Image.blend(faded, red, 0.35), faded, tint)
+    diff = Image.composite(red, diff, mask.filter(ImageFilter.MaxFilter(9)))
+    draw = ImageDraw.Draw(diff)
+    for y in bars:
+        draw.rectangle((0, max(0, y - 3), width - 1, min(a.height - 1, y + 3)), fill=(220, 30, 30))
+    for x0, y0, x1, y1 in boxes:
+        draw.rectangle((x0, max(0, y0 - 10), x1, min(a.height - 1, y1 + 10)), outline=(220, 30, 30), width=4)
     diff.save(out)
-    return 100.0 * changed / total
+    return 100.0 * changed / (a.width * a.height)
 
 
 def slug(page):
