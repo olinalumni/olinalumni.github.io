@@ -13,9 +13,9 @@ The trio is:
 - **Before**: the page as rendered from `master`.
 - **After**: the page as rendered from your branch.
 - **Diff**: the after screenshot with changed content highlighted in red.
-  Rows are aligned between the two captures first, so content that only moved
-  because something above it grew or shrank is not flagged. A thin red bar
-  marks where content was removed.
+  The two captures are aligned first, so content that only moved because
+  something above it grew or shrank is not flagged, even when the move is a
+  fraction of a pixel. A thin red bar marks where content was removed.
 
 Reviewers use the diff to confirm the change touched only what the PR says it
 touched.
@@ -23,7 +23,7 @@ touched.
 ### Generating the trio
 
 Run the script from the repo root on your branch. It needs Google Chrome and
-the Pillow Python package (`python3 -m pip install pillow`).
+the Pillow and numpy Python packages (`python3 -m pip install pillow numpy`).
 
 ```
 python3 .github/scripts/screenshot_trio.py

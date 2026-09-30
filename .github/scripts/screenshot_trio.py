@@ -9,8 +9,8 @@ table is printed for pasting into the PR description.
 Usage:
   python3 .github/scripts/screenshot_trio.py [--base master] [--page /]... [--width 1280]
 
-Requires Google Chrome (or set CHROME=/path/to/chrome) and Pillow
-(`python3 -m pip install pillow`).
+Requires Google Chrome (or set CHROME=/path/to/chrome), Pillow, and numpy
+(`python3 -m pip install pillow numpy`).
 """
 import argparse
 import difflib
@@ -23,9 +23,10 @@ import tempfile
 import time
 
 try:
-    from PIL import Image, ImageChops, ImageDraw, ImageFilter
+    import numpy as np
+    from PIL import Image, ImageDraw, ImageFilter
 except ImportError:
-    sys.exit("Pillow is required: python3 -m pip install pillow")
+    sys.exit("Pillow and numpy are required: python3 -m pip install pillow numpy")
 
 CHROME_CANDIDATES = [
     os.environ.get("CHROME"),
@@ -98,60 +99,118 @@ def pad_to(im, size):
     return out
 
 
+PIXEL_THRESHOLD = 60  # per-channel difference, after a light blur, that counts as changed
+RED = (220, 30, 30)
+
+
 def row_hashes(im):
     data, stride = im.tobytes(), im.width * 3
     return [hashlib.md5(data[i * stride:(i + 1) * stride]).digest() for i in range(im.height)]
 
 
+def neighbor_offsets(spans, length):
+    """For each row, the offset of the nearest matched span above and below it."""
+    if not spans:
+        z = np.zeros(length, dtype=np.int64)
+        return z, z
+    sentinel = np.iinfo(np.int64).min
+    known = np.full(length, sentinel, dtype=np.int64)
+    for start, n, off in spans:
+        known[start:start + n] = off
+    has = known != sentinel
+    idx = np.arange(length)
+    up = np.maximum.accumulate(np.where(has, idx, -1))
+    down = np.minimum.accumulate(np.where(has, idx, length)[::-1])[::-1]
+    prev = np.where(up >= 0, known[np.maximum(up, 0)], spans[0][2])
+    nxt = np.where(down < length, known[np.minimum(down, length - 1)], spans[-1][2])
+    return prev, nxt
+
+
+def unmatched_pixels(src, dst, prev, nxt):
+    """Per-pixel change mask for src rows against the best nearby dst row.
+
+    Each src row is compared with dst rows at the offset of the matched span
+    above it and the one below it. Within an offset, each pixel may match the
+    dst row one above or below, which absorbs sub-pixel layout shifts. The
+    offset with the fewest differing pixels wins for the whole row, so pixels
+    cannot pick unrelated matches independently.
+    """
+    h = src.shape[0]
+    ys = np.arange(h)
+    best_mask, best_count = None, None
+    for off in (prev, nxt):
+        diff = None
+        for d in (-1, 0, 1):
+            rows = ys + off + d
+            valid = (rows >= 0) & (rows < dst.shape[0])
+            dd = np.abs(src - dst[np.clip(rows, 0, dst.shape[0] - 1)]).max(axis=2)
+            dd[~valid] = 255
+            diff = dd if diff is None else np.minimum(diff, dd)
+        mask = diff > PIXEL_THRESHOLD
+        count = mask.sum(axis=1)
+        if best_mask is None:
+            best_mask, best_count = mask, count
+        else:
+            better = count < best_count
+            best_mask[better] = mask[better]
+            best_count = np.minimum(best_count, count)
+    return best_mask
+
+
+def row_ranges(rows, gap=12):
+    ranges = []
+    for y in np.flatnonzero(rows):
+        if ranges and y - ranges[-1][1] <= gap:
+            ranges[-1][1] = y
+        else:
+            ranges.append([y, y])
+    return ranges
+
+
 def make_diff(before, after, out):
     """Highlight changed content in `after`, ignoring vertical shifts.
 
-    Rows are aligned with a sequence match on per-row hashes, so content that
-    only moved because something above it grew or shrank is left alone.
-    Inserted rows get a red tint, replaced rows get a per-pixel diff, and a
-    removed block is marked with a thin red bar at the point it was removed.
+    Rows are aligned by exact match first to find how far each part of the
+    page moved. Every row is then compared against its aligned counterpart
+    with a small tolerance, so content that only moved, even by a fraction of
+    a pixel, is left alone. Changed pixels are painted red, and a red bar marks
+    where content from `before` was removed.
     """
     width = max(before.width, after.width)
-    b, a = pad_to(before, (width, before.height)), pad_to(after, (width, after.height))
-    ops = difflib.SequenceMatcher(None, row_hashes(b), row_hashes(a), autojunk=False).get_opcodes()
+    b_img, a_img = pad_to(before, (width, before.height)), pad_to(after, (width, after.height))
+    blocks = difflib.SequenceMatcher(None, row_hashes(b_img), row_hashes(a_img), autojunk=False).get_matching_blocks()
+    blocks = [blk for blk in blocks if blk.size]
 
-    mask = Image.new("L", a.size, 0)          # per-pixel changes
-    tint = Image.new("L", a.size, 0)          # inserted rows
-    bars = []                                 # y positions of removed blocks
-    boxes = []
-    changed = 0
-    for tag, i1, i2, j1, j2 in ops:
-        if tag == "equal":
-            continue
-        if tag == "replace" and (i2 - i1) == (j2 - j1):
-            region = ImageChops.difference(a.crop((0, j1, width, j2)), b.crop((0, i1, width, i2)))
-            region = region.convert("L").point(lambda v: 255 if v > 16 else 0)
-            mask.paste(region, (0, j1))
-            changed += sum(1 for v in region.getdata() if v)
-            boxes.append((0, j1, width - 1, j2 - 1))
-            continue
-        if j2 > j1:                           # rows only in after (insert, or uneven replace)
-            tint.paste(255, (0, j1, width, j2))
-            changed += (j2 - j1) * width
-            boxes.append((0, j1, width - 1, j2 - 1))
-        if i2 > i1:                           # rows only in before
-            bars.append(j1)
-            boxes.append((0, max(0, j1 - 3), width - 1, min(a.height - 1, j1 + 3)))
+    soften = lambda im: np.asarray(im.filter(ImageFilter.GaussianBlur(1)), dtype=np.int16)
+    b, a = soften(b_img), soften(a_img)
+    a_prev, a_next = neighbor_offsets(sorted((j, n, i - j) for i, j, n in blocks), a.shape[0])
+    b_prev, b_next = neighbor_offsets(sorted((i, n, j - i) for i, j, n in blocks), b.shape[0])
+    a_mask = unmatched_pixels(a, b, a_prev, a_next)
+    b_mask = unmatched_pixels(b, a, b_prev, b_next)
 
-    faded = Image.blend(a.convert("L").convert("RGB"), Image.new("RGB", a.size, "white"), 0.55)
-    if changed == 0 and not bars:
+    a_rows = a_mask.any(axis=1)
+    bars = []
+    for y0, y1 in row_ranges(b_mask.any(axis=1)):
+        y = int(np.clip(y0 + b_prev[y0], 0, a.shape[0] - 1))
+        if not a_rows[max(0, y - 8):y + 9].any():
+            bars.append(y)
+
+    changed = int(a_mask.sum() + b_mask.sum())
+    faded = Image.blend(a_img.convert("L").convert("RGB"), Image.new("RGB", a_img.size, "white"), 0.55)
+    if changed == 0:
         faded.save(out)
         return 0.0
-    red = Image.new("RGB", a.size, (220, 30, 30))
-    diff = Image.composite(Image.blend(faded, red, 0.35), faded, tint)
-    diff = Image.composite(red, diff, mask.filter(ImageFilter.MaxFilter(9)))
+    halo = Image.fromarray((a_mask * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(9))
+    diff = Image.composite(Image.new("RGB", a_img.size, RED), faded, halo)
     draw = ImageDraw.Draw(diff)
+    for y0, y1 in row_ranges(a_rows):
+        xs = np.flatnonzero(a_mask[y0:y1 + 1].any(axis=0))
+        draw.rectangle((max(0, xs[0] - 12), max(0, y0 - 12), min(width - 1, xs[-1] + 12),
+                        min(a.shape[0] - 1, y1 + 12)), outline=RED, width=4)
     for y in bars:
-        draw.rectangle((0, max(0, y - 3), width - 1, min(a.height - 1, y + 3)), fill=(220, 30, 30))
-    for x0, y0, x1, y1 in boxes:
-        draw.rectangle((x0, max(0, y0 - 10), x1, min(a.height - 1, y1 + 10)), outline=(220, 30, 30), width=4)
+        draw.rectangle((0, max(0, y - 3), width - 1, min(a.shape[0] - 1, y + 3)), fill=RED)
     diff.save(out)
-    return 100.0 * changed / (a.width * a.height)
+    return 100.0 * changed / (a.shape[0] * width)
 
 
 def slug(page):
@@ -195,7 +254,7 @@ def main():
             after = trim_bottom(after_p)
             pct = make_diff(before, after, diff_p)
             rows.append((page, before_p, after_p, diff_p, pct))
-            print(f"{page}: {pct:.2f}% of pixels changed -> {out_dir}/{name}-{{before,after,diff}}.png", file=sys.stderr)
+            print(f"{page}: {pct:.2f}% of pixels changed or removed -> {out_dir}/{name}-{{before,after,diff}}.png", file=sys.stderr)
     finally:
         for p in procs:
             p.terminate()
