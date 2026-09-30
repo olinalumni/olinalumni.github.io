@@ -1,18 +1,21 @@
 # Contributing
 
-## Screenshots are required for frontend changes
+## Frontend changes should include screenshots
 
-Every pull request that changes something a visitor can see must include a
+A pull request that changes something a visitor can see should include a
 **before / after / diff** screenshot trio for each affected page. That covers
 edits to `index.html`, anything under `resources/`, `css/`, `tags/`, `img/`,
 and `_data/`. Changes to only `README.md`, `CONTRIBUTING.md`, `CNAME`, or
-files under `.github/` are exempt.
+files under `.github/` do not need them.
 
 The trio is:
 
 - **Before**: the page as rendered from `master`.
 - **After**: the page as rendered from your branch.
-- **Diff**: the after screenshot with changed pixels highlighted in red.
+- **Diff**: the after screenshot with changed content highlighted in red.
+  Rows are aligned between the two captures first, so content that only moved
+  because something above it grew or shrank is not flagged. A thin red bar
+  marks where content was removed.
 
 Reviewers use the diff to confirm the change touched only what the PR says it
 touched.
@@ -49,7 +52,7 @@ of the PR description and replace `<sha>` with the hash of the commit that
 added the images, so the links keep working after the branch is deleted.
 
 If you would rather not commit images, drag the three files into the PR
-description on GitHub instead. Either way, the PR must show all three.
+description on GitHub instead. Either way, aim to show all three.
 
 ## Branches
 
