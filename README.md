@@ -22,6 +22,8 @@ Submitting changes
 ------------------
 Fork this repo. Create a new branch off of master using your initials and the feature added (e.g. `tcr-socialmedia`). Submit that branch as a PR.
 
+PRs that change anything visible on the site must include before/after/diff screenshots. See [CONTRIBUTING.md](CONTRIBUTING.md) for the script that generates them.
+
 License
 -------
 
